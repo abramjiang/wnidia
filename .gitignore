@@ -1,0 +1,30 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# ---- Node ----
+node_modules/
+dist/
+.next/
+
+# ---- Runtime data (保留 schema，忽略大体量运行日志) ----
+data/*.jsonl
+*.log
+*.pid
+
+# ---- 环境变量 / 密钥 ----
+.env
+*.secret
+credentials.*
+
+# ---- 操作系统 ----
+.DS_Store
+Thumbs.db
+
+# ---- 编辑器 ----
+.idea/
+.vscode/
