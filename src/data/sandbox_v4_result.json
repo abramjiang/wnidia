@@ -1,0 +1,400 @@
+{
+  "generated_at": 1790691090324,
+  "duration_s": 32.7,
+  "passed": 75,
+  "failed": 0,
+  "total": 75,
+  "scenarios": [
+    "A 口径与能力面",
+    "B 三维路由（时延）",
+    "C SLA 优先级排队",
+    "D 真实计量与分账",
+    "E 机密计算与证明",
+    "F 门槛度量",
+    "G 边缘断网自治",
+    "H 具身机队",
+    "I QPU 抽象",
+    "J 审计证据包",
+    "K 机主结算",
+    "L 分时复用策略",
+    "M SDK",
+    "N prompt 隐私"
+  ],
+  "results": [
+    {
+      "name": "A1 能力总表可读",
+      "ok": true,
+      "detail": "counts={'implemented': 25, 'simulated': 5, 'decision_only': 1, 'partial': 1, 'planned': 2, 'excluded': 3}"
+    },
+    {
+      "name": "A2 收敛措辞存在（decision_only/simulated 不得说成已支持）",
+      "ok": true,
+      "detail": "decision_only=策略可计算、可解释；执行依赖硬件与真机验证 label=有决定无执行"
+    },
+    {
+      "name": "A3 对外只讲三层",
+      "ok": true,
+      "detail": "layers=['center', 'edge', 'device']"
+    },
+    {
+      "name": "A4 secret 与 cc 分离表述",
+      "ok": true,
+      "detail": "两套 L1–L4 已分离"
+    },
+    {
+      "name": "B0 节点已上报时延（第三维有数据）",
+      "ok": true,
+      "detail": "latencies=[11.93, 14.72, 18.48, 18.58]"
+    },
+    {
+      "name": "B0b 存在超过预算的节点（说明硬约束确实在筛，不是摆设）",
+      "ok": true,
+      "detail": "budget=15.255ms lats=[11.93, 14.72, 18.48, 18.58]"
+    },
+    {
+      "name": "B1 时延预算内任务可完成",
+      "ok": true,
+      "detail": "budget=15.255ms http=200 body={\"id\": \"t-1790691066240-bed7b2\", \"object\": \"chat.completion\", \"model\": \"stepfun\", \"choices\": [{\"index\": 0, \"message\": {\"role\": \"assistant\", "
+    },
+    {
+      "name": "B2 决策时命中的节点满足时延硬约束",
+      "ok": true,
+      "detail": "node=home-1 决策时延=14.7ms budget=15.255ms（注：当前时延会随心跳变化）"
+    },
+    {
+      "name": "B3 不可满足的时延预算被明确拒绝（不卡队列、原因可区分）",
+      "ok": true,
+      "detail": "budget=0.001ms http=409 detail=rejected:latency_budget_unmet"
+    },
+    {
+      "name": "C1 低优/高优任务已同批入队",
+      "ok": true,
+      "detail": "injected=['f1f0c5', 'acaec8']"
+    },
+    {
+      "name": "C2 两任务均被绑定",
+      "ok": true,
+      "detail": "binds=['acaec8', 'f1f0c5']"
+    },
+    {
+      "name": "C3 高优先出队（sla-1 先于后创建的 sla-3 被绑定）",
+      "ok": true,
+      "detail": "首个绑定=acaec8 期望=sla-1(acaec8)"
+    },
+    {
+      "name": "C4 两任务 SLA 标记正确（sla-1/sla-3 都已消费）",
+      "ok": true,
+      "detail": "{'q-1790691072271-f1f0c5': 'sla-3', 'q-1790691072271-acaec8': 'sla-1'}"
+    },
+    {
+      "name": "D1 token 口径任务完成",
+      "ok": true,
+      "detail": "state=done"
+    },
+    {
+      "name": "D2 采到 token 用量",
+      "ok": true,
+      "detail": "in=32 out=25 estimated=0"
+    },
+    {
+      "name": "D3 node 口径任务完成",
+      "ok": true,
+      "detail": "state=done"
+    },
+    {
+      "name": "D4 三口径并存且已分账",
+      "ok": true,
+      "detail": "modes=['node', 'token']"
+    },
+    {
+      "name": "D5 分账维度齐全（tenant/project/department）",
+      "ok": true,
+      "detail": "tenants=['demo-d', 'demo-c', 'demo-b']"
+    },
+    {
+      "name": "D6 计量质量可报（真实 vs 估算）",
+      "ok": true,
+      "detail": "quality={'entries': 5, 'real': 5, 'estimated': 0, 'real_ratio': 1.0}"
+    },
+    {
+      "name": "E1 云节点存在",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "E2 沙盒证明签发成功",
+      "ok": true,
+      "detail": "cc=CC-L2 verifier=sim"
+    },
+    {
+      "name": "E3 证明校验通过",
+      "ok": true,
+      "detail": "reason="
+    },
+    {
+      "name": "E4 L3 任务完成",
+      "ok": true,
+      "detail": "state=done"
+    },
+    {
+      "name": "E5 L3 任务落在具备 CC 的节点",
+      "ok": true,
+      "detail": "node=cloud-0 cc=CC-L2"
+    },
+    {
+      "name": "E6 证明视图可读",
+      "ok": true,
+      "detail": "recent_valid=1 backend=sim"
+    },
+    {
+      "name": "F1 五条门槛全部评估",
+      "ok": true,
+      "detail": "overall=no-go counts={'go': 1, 'no-go': 3, 'insufficient': 1}"
+    },
+    {
+      "name": "F2 每条门槛都报样本量",
+      "ok": true,
+      "detail": "samples=[4, 6, 7, 6, 6]"
+    },
+    {
+      "name": "F3 样本不足不得判 GO",
+      "ok": true,
+      "detail": "min_sample=5"
+    },
+    {
+      "name": "F4 有收缩线动作说明",
+      "ok": true,
+      "detail": "任一门槛 NO-GO：收缩或暂停该业务线（BP P21 原文口径）；样本不足不得"
+    },
+    {
+      "name": "G1 边缘本地队列可入队",
+      "ok": true,
+      "detail": "queue=3 tokens=1500"
+    },
+    {
+      "name": "G2 边缘处于断网自治状态",
+      "ok": true,
+      "detail": "simulated=True"
+    },
+    {
+      "name": "G3 本地批次已回放",
+      "ok": true,
+      "detail": "batch=ob-edge-1-1790691086-3 status=200"
+    },
+    {
+      "name": "G4 控制面已记录回放批次",
+      "ok": true,
+      "detail": "batches=1 replayed=1 tokens=1500"
+    },
+    {
+      "name": "G5 批次回放幂等（重复只记一次）",
+      "ok": true,
+      "detail": "first=True second=True"
+    },
+    {
+      "name": "H1 机队注册成功",
+      "ok": true,
+      "detail": "robots=3 fleets=1"
+    },
+    {
+      "name": "H2 灰度计划可登记",
+      "ok": true,
+      "detail": "stages=[10, 50, 100]"
+    },
+    {
+      "name": "H3 灰度分配确定性（10% 时新版本数不超过总数）",
+      "ok": true,
+      "detail": "new=0 old=3"
+    },
+    {
+      "name": "H4 机队派发成功",
+      "ok": true,
+      "detail": "assigned=['r-1', 'r-1']"
+    },
+    {
+      "name": "H5 回传脱敏生效（IP/邮箱/手机）",
+      "ok": true,
+      "detail": "redactions={'[IP]': 1, '[EMAIL]': 1, '[PHONE]': 1}"
+    },
+    {
+      "name": "I1 QPU 后端枚举可读",
+      "ok": true,
+      "detail": "backends=['sim-statevector', 'cudaq', 'qpu-hardware']"
+    },
+    {
+      "name": "I2 PQC 明确标注未实现",
+      "ok": true,
+      "detail": "HMAC-SHA256 占位（仅链路演示，不是后量子算法）"
+    },
+    {
+      "name": "I3 Bell 态模拟产出两态分布",
+      "ok": true,
+      "detail": "counts={'11': 413, '00': 387}"
+    },
+    {
+      "name": "I4 分布接近均匀（允许采样波动）",
+      "ok": true,
+      "detail": "spread=26 total=800"
+    },
+    {
+      "name": "I5 明示为模拟而非量子硬件",
+      "ok": true,
+      "detail": "内建 statevector 模拟结果，非量子硬件；真机路径需接入 CUDA-Q"
+    },
+    {
+      "name": "I6 CUDA-Q 未安装时拒绝而非静默回退",
+      "ok": true,
+      "detail": "CUDA-Q 未安装；按 BP 口径此处只做接口预留，不回退到内建模拟（避免假装已接入）"
+    },
+    {
+      "name": "I7 超上限量子位被拒",
+      "ok": true,
+      "detail": "qubits 超过模拟上限 12（statevector 内存限制）"
+    },
+    {
+      "name": "J1 证据包可导出",
+      "ok": true,
+      "detail": "counts={'tasks': 7, 'events': 34, 'ledger': 7, 'attestations': 1, 'chain': 23}"
+    },
+    {
+      "name": "J2 默认不含 prompt 明文",
+      "ok": true,
+      "detail": "prompts_included=False"
+    },
+    {
+      "name": "J3 证据包签名校验通过",
+      "ok": true,
+      "detail": "digest_match=True sig=True"
+    },
+    {
+      "name": "J4 篡改后校验失败（可检出）",
+      "ok": true,
+      "detail": "digest_match=False"
+    },
+    {
+      "name": "J5 审计链完整",
+      "ok": true,
+      "detail": "length=23 broken=[]"
+    },
+    {
+      "name": "K1 结算可执行并落库",
+      "ok": true,
+      "detail": "nodes=3 owner=0.002621"
+    },
+    {
+      "name": "K2 分成比例为规划假设并显式标注",
+      "ok": true,
+      "detail": "ratio=0.6"
+    },
+    {
+      "name": "K3 结算记录可查",
+      "ok": true,
+      "detail": "records=3"
+    },
+    {
+      "name": "K4 重复结算幂等（同周期先清后写，不重复计账）",
+      "ok": true,
+      "detail": "records 3 → 3 (overwritten=3)"
+    },
+    {
+      "name": "L1 分时排期生成",
+      "ok": true,
+      "detail": "share={'a': 0.5, 'b': 0.25, 'c': 0.25}"
+    },
+    {
+      "name": "L2 份额归一",
+      "ok": true,
+      "detail": "sum=1.0"
+    },
+    {
+      "name": "L3 明示仅策略不执行",
+      "ok": true,
+      "detail": "仅产出分时排期策略；MPS/MIG 的真实隔离执行依赖硬件，GB10 不支持 M"
+    },
+    {
+      "name": "L4 非法窗口被拒",
+      "ok": true,
+      "detail": "时片不能大于窗口"
+    },
+    {
+      "name": "M1 SDK health 可用",
+      "ok": true,
+      "detail": "version=5.0.0"
+    },
+    {
+      "name": "M2 SDK capabilities 可用",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "M3 SDK metering 可用",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "M4 SDK gates 可用",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "M5 SDK 租户用量可用",
+      "ok": true,
+      "detail": "entries=2"
+    },
+    {
+      "name": "N1 改造后任务仍能正常完成（prompt 经内存副本送达 worker）",
+      "ok": true,
+      "detail": "http=200 id=119928"
+    },
+    {
+      "name": "N2 库里没有任何明文 prompt（直查 SQLite 核对）",
+      "ok": true,
+      "detail": "共 8 条任务，明文 0 条"
+    },
+    {
+      "name": "N3 /admin/state 不含敏感原文（全字段扫描）",
+      "ok": true,
+      "detail": "扫描 18622 字符"
+    },
+    {
+      "name": "N4 看板 /api/state 同样脱敏（不是第二个口径）",
+      "ok": true,
+      "detail": "http=200"
+    },
+    {
+      "name": "N5 租户用量视图同样脱敏",
+      "ok": true,
+      "detail": "扫描 2272 字符"
+    },
+    {
+      "name": "N6 脱敏后仍可核验（摘要 + 长度 + 状态齐全）",
+      "ok": true,
+      "detail": "state=released digest=2565ca039692eb84 chars=22"
+    },
+    {
+      "name": "N7 证据包默认不含 prompt 明文",
+      "ok": true,
+      "detail": "prompts_included=False"
+    },
+    {
+      "name": "N8 证据包保留 prompt 摘要（不泄露内容但可核验）",
+      "ok": true,
+      "detail": "policy_store=False"
+    },
+    {
+      "name": "N9 请求 include_prompts 但开关未开时如实拒绝（不给\"看起来给了\"）",
+      "ok": true,
+      "detail": "included=False requested=True"
+    },
+    {
+      "name": "N10 /admin/compliance 暴露 prompt 留存策略",
+      "ok": true,
+      "detail": "store=False reveal=False"
+    },
+    {
+      "name": "N11 无活任务因 prompt 不可用而失败（内存副本机制有效）",
+      "ok": true,
+      "detail": "miss_active=0 miss_released=97 rehydrated=109"
+    }
+  ]
+}
