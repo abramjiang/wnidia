@@ -1,0 +1,80 @@
+{
+  "skill": "cc-auditor",
+  "version": "1.0.0",
+  "evals": [
+    {
+      "id": "cc-l3-maps-to-cc-l2-and-allow",
+      "category": "correctness",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--secret", "L3", "--state-file",
+              "evals/fixtures/state_cc.json"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"required_cc": "CC-L2", "admission_result": "allow",
+                        "serviceable_nodes.0": "cloud-0"},
+        "json_keys": ["nodes", "blocked_nodes", "chain", "terminology"],
+        "json_nonempty": ["blocked_nodes"]
+      }
+    },
+    {
+      "id": "cc-l1-allows-every-node",
+      "category": "correctness",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--secret", "L1", "--state-file",
+              "evals/fixtures/state_cc.json"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"required_cc": "CC-L0", "admission_result": "allow",
+                        "blocked_nodes": []}
+      }
+    },
+    {
+      "id": "cc-l4-requires-cc-l3",
+      "category": "security",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--secret", "L4", "--state-file",
+              "evals/fixtures/state_cc.json"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"required_cc": "CC-L3", "admission_result": "allow"}
+      }
+    },
+    {
+      "id": "cc-chain-valid-detected",
+      "category": "security",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--secret", "L1", "--state-file",
+              "evals/fixtures/state_cc.json"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"chain.length": 3, "chain.ok": true}
+      }
+    },
+    {
+      "id": "cc-chain-tamper-detected",
+      "category": "security",
+      "kind": "negative",
+      "run": ["python", "tool.py", "--secret", "L1", "--state-file",
+              "evals/fixtures/state_cc_tampered.json"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"chain.ok": false, "chain.broken.0.seq": 2},
+        "json_contains": ["chain_hash 不匹配"]
+      }
+    },
+    {
+      "id": "cc-invalid-secret-negative",
+      "category": "robustness",
+      "kind": "negative",
+      "run": ["python", "tool.py", "--secret", "L9"],
+      "expect": {"exit_code_nonzero": true}
+    },
+    {
+      "id": "cc-missing-snapshot-negative",
+      "category": "robustness",
+      "kind": "negative",
+      "run": ["python", "tool.py", "--state-file", "evals/fixtures/nope.json"],
+      "expect": {"exit_code_nonzero": true}
+    }
+  ]
+}
