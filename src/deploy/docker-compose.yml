@@ -1,0 +1,77 @@
+# WNIDIA 单机伪分布式（mock，无需 GPU）。
+# 在仓库根目录执行： docker compose -f deploy/docker-compose.yml up --build
+name: wnidia
+
+x-worker-env: &worker-env
+  CTRL: http://controller:9000
+  WNIDIA_TOKEN: "${WNIDIA_TOKEN:-changeme}"
+  VLLM_PORT: 8100
+
+services:
+  controller:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.controller
+    image: wnidia-controller:latest
+    container_name: controller
+    ports:
+      - "9000:9000"
+      - "8888:8888"
+    environment:
+      WNIDIA_TOKEN: "${WNIDIA_TOKEN:-changeme}"
+      WNIDIA_DASH_USER: "${WNIDIA_DASH_USER:-reviewer}"
+      WNIDIA_DASH_PASS: "${WNIDIA_DASH_PASS:-wnidia2026}"
+      WNIDIA_JEV_MODE: "${WNIDIA_JEV_MODE:-mock}"
+      WNIDIA_JEV_BACKEND: "${WNIDIA_JEV_BACKEND:-http}"
+      WNIDIA_JEV_BASE: "${WNIDIA_JEV_BASE:-http://127.0.0.1:8201}"
+      WNIDIA_JEV_KEY: "${WNIDIA_JEV_KEY:-}"
+      WNIDIA_JEV_MODEL: "${WNIDIA_JEV_MODEL:-heman10x/openJev-verdict-2.0}"
+    volumes:
+      - wnidia-data:/app/data
+    restart: unless-stopped
+
+  cloud-0:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.worker
+    image: wnidia-worker:latest
+    container_name: cloud-0
+    depends_on: [controller]
+    environment:
+      <<: *worker-env
+      NODE: cloud-0
+      NODE_ROLE: prefill
+      NODE_TIER: cloud
+      MEM_LIMIT_GB: "40"
+      COMPUTE_PCT: "100"
+      GPU_NAME: GB10
+    restart: unless-stopped
+
+  edge-1:
+    image: wnidia-worker:latest
+    container_name: edge-1
+    depends_on: [controller]
+    environment:
+      <<: *worker-env
+      NODE: edge-1
+      NODE_ROLE: decode
+      NODE_TIER: edge
+      MEM_LIMIT_GB: "8"
+      COMPUTE_PCT: "60"
+    restart: unless-stopped
+
+  cpu-1:
+    image: wnidia-worker:latest
+    container_name: cpu-1
+    depends_on: [controller]
+    environment:
+      <<: *worker-env
+      NODE: cpu-1
+      NODE_ROLE: cpu
+      NODE_TIER: cpu
+      MEM_LIMIT_GB: "4"
+      COMPUTE_PCT: "40"
+    restart: unless-stopped
+
+volumes:
+  wnidia-data:
