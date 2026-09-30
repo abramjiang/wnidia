@@ -1,0 +1,69 @@
+{
+  "_note": "离线 CC 体检快照：cloud-0 具备 CC-L3 且证明有效；edge-1 只有 CC-L0；home-1 宣称 CC-L2 但证明已失效。审计链 3 条且哈希自洽。",
+  "nodes": [
+    {
+      "node": "cloud-0",
+      "tier": "cloud",
+      "cc_level": "CC-L3",
+      "trusted": true
+    },
+    {
+      "node": "edge-1",
+      "tier": "edge",
+      "cc_level": "CC-L0",
+      "trusted": false
+    },
+    {
+      "node": "home-1",
+      "tier": "home",
+      "cc_level": "CC-L2",
+      "trusted": false
+    }
+  ],
+  "attestations": [
+    {
+      "node": "cloud-0",
+      "cc_level": "CC-L3",
+      "valid": 1,
+      "verifier": "sim",
+      "ttl_s": 900
+    },
+    {
+      "node": "home-1",
+      "cc_level": "CC-L2",
+      "valid": 0,
+      "verifier": "sim",
+      "ttl_s": 900,
+      "detail": "证明已过期"
+    }
+  ],
+  "chain": [
+    {
+      "seq": 1,
+      "ts": 1000,
+      "kind": "controller-start",
+      "ref": "boot",
+      "payload_digest": "d1",
+      "prev_hash": "",
+      "chain_hash": "d7149b2744694d90119a8d96875b5a0effc79ade74d607d52dfaca5b6aa39b50"
+    },
+    {
+      "seq": 2,
+      "ts": 1001,
+      "kind": "node-register",
+      "ref": "cloud-0",
+      "payload_digest": "d2",
+      "prev_hash": "d7149b2744694d90119a8d96875b5a0effc79ade74d607d52dfaca5b6aa39b50",
+      "chain_hash": "3049c2e4a3c2b7e977e20e3edf49a52fb9404a0f29a72042927418691918d489"
+    },
+    {
+      "seq": 3,
+      "ts": 1002,
+      "kind": "task-submit",
+      "ref": "t-1",
+      "payload_digest": "d3",
+      "prev_hash": "3049c2e4a3c2b7e977e20e3edf49a52fb9404a0f29a72042927418691918d489",
+      "chain_hash": "661551e2bb717090c04b2ec3bc72db62624288affe497a9c9dd7b0283f17ce25"
+    }
+  ]
+}
