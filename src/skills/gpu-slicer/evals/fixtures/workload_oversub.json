@@ -1,0 +1,6 @@
+{
+  "models": [
+    {"name": "huge-A", "weights_gb": 70, "kv_gb": 10, "concurrency": 2},
+    {"name": "huge-B", "weights_gb": 50, "kv_gb": 10, "concurrency": 2}
+  ]
+}
