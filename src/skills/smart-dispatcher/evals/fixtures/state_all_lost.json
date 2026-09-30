@@ -1,0 +1,11 @@
+{
+  "nodes": [
+    {"node": "cloud-0", "tier": "cloud", "role": "prefill", "status": "lost",
+     "util": 0, "free_mem_gb": 40, "reputation": 1, "trusted": true,
+     "sovereign_region": "local", "kv_hit": 0.2},
+    {"node": "edge-1", "tier": "edge", "role": "decode", "status": "lost",
+     "util": 0, "free_mem_gb": 6, "reputation": 1, "trusted": false,
+     "sovereign_region": "local", "kv_hit": 0.6}
+  ],
+  "tasks": [], "events": []
+}
