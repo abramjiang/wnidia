@@ -1,0 +1,108 @@
+{
+  "skill": "engine-selector",
+  "version": "1.0.0",
+  "evals": [
+    {
+      "id": "es-chat-picks-exact-engine",
+      "category": "correctness",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--task-type", "chat", "--secret", "L1",
+              "--tier", "edge",
+              "--engines-source", "evals/fixtures/probes_healthy.json"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"selected": "tensorfold", "consistency_required": false,
+                        "probed": true},
+        "json_keys": ["ranking", "fallback_chain", "consistency_guarantee",
+                      "compliance", "source"],
+        "json_nonempty": ["reason", "ranking"]
+      }
+    },
+    {
+      "id": "es-l3-forces-exact-and-satisfied",
+      "category": "security",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--task-type", "chat", "--secret", "L3",
+              "--prefer-exact",
+              "--engines-source", "evals/fixtures/probes_healthy.json"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"selected": "tensorfold", "consistency_required": true,
+                        "consistency_satisfied": true},
+        "json_contains": ["逐字节一致"]
+      }
+    },
+    {
+      "id": "es-batch-prefers-throughput-engine",
+      "category": "correctness",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--task-type", "heavy", "--secret", "L1",
+              "--tier", "cloud",
+              "--engines-source", "evals/fixtures/probes_healthy.json"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"selected": "vllm", "consistency_required": false},
+        "json_contains": ["高吞吐"]
+      }
+    },
+    {
+      "id": "es-degrade-when-cuda-path-unavailable",
+      "category": "robustness",
+      "kind": "negative",
+      "run": ["python", "tool.py", "--task-type", "chat", "--secret", "L3",
+              "--prefer-exact",
+              "--engines-source", "evals/fixtures/probes_cuda_missing.json"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"selected": "ollama", "consistency_required": true,
+                        "consistency_satisfied": false},
+        "json_contains": ["不提供逐字节一致性保证"]
+      }
+    },
+    {
+      "id": "es-all-engines-down-falls-back-to-mock",
+      "category": "robustness",
+      "kind": "negative",
+      "run": ["python", "tool.py", "--task-type", "chat",
+              "--engines-source", "evals/fixtures/probes_all_down.json"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"selected": "mock"},
+        "json_contains": ["模拟引擎"]
+      }
+    },
+    {
+      "id": "es-compliance-scope-is-loopback-only",
+      "category": "security",
+      "kind": "positive",
+      "run": ["python", "tool.py",
+              "--engines-source", "evals/fixtures/probes_healthy.json"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"compliance.probe_scope": "loopback-only"}
+      }
+    },
+    {
+      "id": "es-missing-snapshot-negative",
+      "category": "robustness",
+      "kind": "negative",
+      "run": ["python", "tool.py",
+              "--engines-source", "evals/fixtures/does_not_exist.json"],
+      "expect": {"exit_code_nonzero": true}
+    },
+    {
+      "id": "es-invalid-secret-negative",
+      "category": "robustness",
+      "kind": "negative",
+      "run": ["python", "tool.py", "--secret", "L5"],
+      "expect": {"exit_code_nonzero": true}
+    },
+    {
+      "id": "es-invalid-tier-negative",
+      "category": "robustness",
+      "kind": "negative",
+      "run": ["python", "tool.py", "--tier", "mainframe"],
+      "expect": {"exit_code_nonzero": true}
+    }
+  ]
+}
