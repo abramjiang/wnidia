@@ -1,0 +1,113 @@
+# WNIDIA on DGX Spark（GPU 模式）。
+# 单卡多实例：多个 vLLM 引擎按 gpu_memory_utilization 切分同一 GPU，
+# 各自配对一个 worker agent（gpu 模式，OpenAI 兼容代理）。
+# 在仓库根目录执行： bash scripts/deploy_spark.sh
+name: wnidia
+
+x-worker-env: &worker-env
+  CTRL: http://controller:9000
+  WNIDIA_TOKEN: "${WNIDIA_TOKEN:-changeme}"
+  VLLM_PORT: 8100
+  WNIDIA_MODE: gpu
+
+services:
+  controller:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.controller
+    image: wnidia-controller:latest
+    container_name: controller
+    ports:
+      - "9000:9000"
+      - "8888:8888"
+    environment:
+      WNIDIA_TOKEN: "${WNIDIA_TOKEN:-changeme}"
+      WNIDIA_DASH_USER: "${WNIDIA_DASH_USER:-reviewer}"
+      WNIDIA_DASH_PASS: "${WNIDIA_DASH_PASS:-wnidia2026}"
+      WNIDIA_JEV_MODE: "${WNIDIA_JEV_MODE:-mock}"
+      WNIDIA_JEV_BACKEND: "${WNIDIA_JEV_BACKEND:-http}"
+      WNIDIA_JEV_BASE: "${WNIDIA_JEV_BASE:-http://127.0.0.1:8201}"
+      WNIDIA_JEV_KEY: "${WNIDIA_JEV_KEY:-}"
+      WNIDIA_JEV_MODEL: "${WNIDIA_JEV_MODEL:-heman10x/openJev-verdict-2.0}"
+    volumes:
+      - wnidia-data:/app/data
+    restart: unless-stopped
+
+  # ---- 引擎 0（大份额，prefill/主力） ----
+  engine-0:
+    image: "${VLLM_IMAGE:-vllm/vllm-openai:latest}"
+    container_name: engine-0
+    command: >-
+      --model "${MODEL_PATH:-/models/stepfun}"
+      --host 0.0.0.0 --port 8200
+      --gpu_memory_utilization 0.45
+      --tensor-parallel-size 1
+      --max-model-len 32768
+    ports: ["8200:8200"]
+    volumes:
+      - "${MODELS_DIR:-/home/xsuper/models}:/models:ro"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+              device_ids: ["0"]
+    restart: unless-stopped
+
+  # ---- 引擎 1（小份额，decode/边缘） ----
+  engine-1:
+    image: "${VLLM_IMAGE:-vllm/vllm-openai:latest}"
+    container_name: engine-1
+    command: >-
+      --model "${MODEL_PATH:-/models/stepfun-small}"
+      --host 0.0.0.0 --port 8201
+      --gpu_memory_utilization 0.15
+      --tensor-parallel-size 1
+      --max-model-len 16384
+    ports: ["8201:8201"]
+    volumes:
+      - "${MODELS_DIR:-/home/xsuper/models}:/models:ro"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+              device_ids: ["0"]
+    restart: unless-stopped
+
+  cloud-0:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.worker
+    image: wnidia-worker:latest
+    container_name: cloud-0
+    depends_on: [controller, engine-0]
+    environment:
+      <<: *worker-env
+      NODE: cloud-0
+      NODE_ROLE: prefill
+      NODE_TIER: cloud
+      MEM_LIMIT_GB: "58"
+      COMPUTE_PCT: "100"
+      GPU_NAME: GB10
+      VLLM_BASE: http://engine-0:8200/v1
+    restart: unless-stopped
+
+  edge-1:
+    image: wnidia-worker:latest
+    container_name: edge-1
+    depends_on: [controller, engine-1]
+    environment:
+      <<: *worker-env
+      NODE: edge-1
+      NODE_ROLE: decode
+      NODE_TIER: edge
+      MEM_LIMIT_GB: "19"
+      COMPUTE_PCT: "60"
+      VLLM_BASE: http://engine-1:8201/v1
+    restart: unless-stopped
+
+volumes:
+  wnidia-data:
