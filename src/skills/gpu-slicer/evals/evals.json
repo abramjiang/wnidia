@@ -1,0 +1,66 @@
+{
+  "skill": "gpu-slicer",
+  "version": "1.0.0",
+  "evals": [
+    {
+      "id": "gs-mixed-fits",
+      "category": "correctness",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--gpu-mem", "128",
+              "--workload-file", "evals/fixtures/workload_mixed.json"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {
+          "selected_mode": "mps",
+          "mps.enabled": true,
+          "deferred_models": []
+        },
+        "json_instance_count": 2
+      }
+    },
+    {
+      "id": "gs-oversub-defer",
+      "category": "correctness",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--gpu-mem", "128",
+              "--workload-file", "evals/fixtures/workload_oversub.json"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {
+          "selected_mode": "instances",
+          "deferred_models": ["huge-B"]
+        },
+        "json_instance_count": 1
+      }
+    },
+    {
+      "id": "gs-util-fraction-bounded",
+      "category": "efficiency",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--gpu-mem", "128",
+              "--workload-file", "evals/fixtures/workload_mixed.json"],
+      "expect": {
+        "exit_code": 0,
+        "json_max": {"total_gpu_memory_utilization": 0.92}
+      }
+    },
+    {
+      "id": "gs-mig-fallback",
+      "category": "robustness",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--gpu-mem", "128", "--mode", "mig",
+              "--workload-file", "evals/fixtures/workload_mixed.json"],
+      "expect": {
+        "exit_code": 0,
+        "json_contains": ["MIG 不可用"]
+      }
+    },
+    {
+      "id": "gs-bad-workload-negative",
+      "category": "robustness",
+      "kind": "negative",
+      "run": ["python", "tool.py", "--workload", "not-json"],
+      "expect": {"exit_code_nonzero": true}
+    }
+  ]
+}
