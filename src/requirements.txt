@@ -1,0 +1,7 @@
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+requests==2.32.3
+pydantic==2.9.2
+# NVIDIA 官方 NVML 绑定（worker 真实 GPU 画像）。纯 Python、无驱动依赖；
+# 无 GPU 环境装了也只是闲置，worker 代码不硬依赖（缺失时自动回落 nvidia-smi）。
+nvidia-ml-py==12.560.30
