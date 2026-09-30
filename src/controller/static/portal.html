@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WNIDIA 性能前端 · 异构算力智能调度基座</title>
+<style>
+:root{--bg:#0b1220;--bg2:#0f1b2d;--card:#16263d;--line:#243650;--ink:#e7edf5;
+--mut:#8b99ad;--green:#6FAC00;--gl:#8fcB1f;--blue:#5aa9e6;--amber:#e0a53f;
+--red:#e88a7d;--navy:#162A4A}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+background:var(--bg);color:var(--ink);font-size:14px;line-height:1.7}
+header{padding:20px 26px;border-bottom:1px solid var(--line);display:flex;
+align-items:center;gap:14px;background:linear-gradient(90deg,#0d1a2e,#0b1220)}
+header h1{font-size:20px;font-weight:800}
+header .sub{font-size:12px;color:var(--mut)}
+header .right{margin-left:auto;font-size:12px;color:var(--mut)}
+.wrap{max-width:1200px;margin:0 auto;padding:22px 26px 70px}
+h2{font-size:17px;margin:26px 0 12px;padding-left:10px;border-left:4px solid var(--green)}
+h3{font-size:14px;margin:14px 0 6px;color:var(--mut);font-weight:600}
+.hero{background:var(--card);border:1px solid var(--line);border-radius:12px;
+padding:20px 22px;margin-bottom:8px}
+.hero .lead{font-size:16px;font-weight:700;margin-bottom:6px}
+.hero p{color:#c4cedb;font-size:13.5px}
+.hero .lead2{color:var(--gl);font-weight:700;font-size:14px;margin-top:5px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:14px 0}
+.kpi{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.kpi b{display:block;font-size:20px;color:var(--gl)}
+.kpi span{font-size:11.5px;color:var(--mut)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;
+padding:16px 18px;cursor:pointer;transition:.15s;position:relative;overflow:hidden}
+.card:hover{border-color:var(--green);transform:translateY(-2px)}
+.card.run{border-color:var(--green);box-shadow:0 0 0 1px var(--green) inset}
+.card .tag{font-size:10.5px;padding:2px 8px;border-radius:10px;background:#1c3a5c;
+color:var(--blue);font-weight:700}
+.card .tag.mod{background:#23401c;color:#a4d97c}
+.card h4{font-size:15px;margin:8px 0 4px}
+.card p{font-size:12.5px;color:var(--mut);margin-bottom:8px}
+.card ol{margin:6px 0 0 16px;font-size:12px;color:#c4cedb}
+.card li{margin:2px 0}
+.card .go{margin-top:10px;font-size:12.5px;color:var(--gl);font-weight:700}
+.mapline{margin-top:8px;font-size:11.5px;color:var(--blue)}
+.needline{margin-top:3px;font-size:11.5px;color:var(--mut)}
+.needline b{color:#c4cedb;font-weight:600}
+.card.flash{animation:cardflash 1.6s ease-out}
+@keyframes cardflash{0%{box-shadow:0 0 0 2px var(--gl) inset;background:#1b2f1c}
+  100%{box-shadow:0 0 0 0 transparent inset}}
+.steps{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px}
+.sp{font-size:10.5px;padding:2px 7px;border-radius:5px;background:#1c2a42;color:var(--mut)}
+.sp.ok{background:#1c3a5c;color:var(--blue)}
+.sp.bad{background:#4a1f1c;color:var(--red)}
+.sp.on{background:#23401c;color:#a4d97c}
+.runsteps{display:none;background:#131f33;border:1px solid var(--line);border-radius:10px;
+  padding:10px 14px;margin-top:12px;font-size:12.5px}
+.runsteps .rl{padding:3px 0;color:#c4cedb;border-bottom:1px dashed #1d2c43}
+.runsteps .rl:last-child{border-bottom:0}
+.runsteps .rl .st-ic{display:inline-block;width:18px}
+.runsteps .hd{font-size:11px;color:var(--mut);margin-bottom:4px}
+.box{background:#131f33;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:12px 0}
+.box.warn{border-color:#5a4a1e;background:#221c10}
+.note{font-size:11.5px;color:var(--mut)}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin:8px 0}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left}
+th{background:#132238;color:var(--mut)}
+a{color:var(--blue)}
+.btn{display:inline-block;padding:7px 14px;border-radius:8px;
+background:var(--green);color:#0b1220;font-weight:700;font-size:12.5px;border:0;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--gl);border:1px solid var(--green)}
+.btn.danger{background:transparent;color:var(--red);border:1px solid #5c2b28}
+.btn.gray{background:#1c2a42;color:#c4cedb}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.controls{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap}
+#busy{display:none;background:#1c2a42;border:1px solid var(--line);
+  border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px}
+#bench-out{background:#0d1828;border-radius:8px;padding:10px 12px;margin-top:10px;
+  font-family:Menlo,Consolas,monospace;font-size:12px;color:#c4cedb;display:none;white-space:pre-wrap}
+.bpr{color:#7d8aa5;font-size:10.5px}
+.livedot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#a4d97c;
+  margin-right:6px;animation:livepulse 1.6s infinite}
+@keyframes livepulse{0%,100%{opacity:1}50%{opacity:.3}}
+.bump{animation:bump .5s ease-out}
+@keyframes bump{0%{transform:scale(1.25);color:#fff}100%{transform:scale(1)}}
+.distbar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:#1c2a42;margin:6px 0}
+.distbar i{display:block;height:100%;transition:width .6s ease}
+.d-ok{background:#4a7d2a}.d-div{background:#8a4a3d}.d-na{background:#3a4356}
+.updstamp{font-size:11px;color:var(--mut);margin-left:8px}
+.flashchg{animation:chg .8s ease-out}
+@keyframes chg{0%{background:#243b5c}100%{background:transparent}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>WNIDIA · 异构算力智能调度基座</h1>
+    <div class="sub">让算力在云、边、端之间按需流动 —— 边缘算力箱 · 家庭异构节点 · 私有云资源池，一张网统一调度</div>
+  </div>
+  <div class="right">
+    <span style="color:var(--gl);font-weight:700">性能前端</span> · <a href="/">实时后端</a> · 基于 NVIDIA CUDA-X 生态
+  </div>
+</header>
+<div class="wrap">
+
+<div class="hero">
+  <div class="lead">算力的下一程不是建更多机房，而是让算力在云、边、端之间就近流动</div>
+  <p>中心机房单位投资高、城域带宽趋紧，而企业自建集群 GPU 平均利用率常低于 30%——贵与闲并存。</p>
+  <p class="lead2">WNIDIA 纳管私有云、边缘算力箱、家庭异构节点，构成一张可计量、可加密、可就近调度的算力网。</p>
+  <div class="kpis">
+    <div class="kpi"><b>&lt;30% → 85%+</b><span>利用率：现状 → 纳管目标（此项目目标，待 POC）</span></div>
+    <div class="kpi"><b>3 类节点 · 1 张网</b><span>私有云 / 边缘箱 / 家庭端统一纳管</span></div>
+    <div class="kpi"><b>4 条收入线</b><span>订阅 / 硬件 / 租赁分成 / 私密溢价</span></div>
+    <div class="kpi"><b>三维择点</b><span>按时延 / 成本 / 密级自动路由</span></div>
+  </div>
+  <div class="note">带 * 与"目标"字样的数值为规划假设，需经 POC 实测与客户付费验证，非既成事实。</div>
+</div>
+
+<h2>场景实测 · 点卡片即运行真实剧本</h2>
+<div id="busy"></div>
+<div class="controls">
+  <button class="btn gray" id="btn-pause" onclick="pauseScene()">暂停</button>
+  <button class="btn gray" id="btn-resume" onclick="resumeScene()">继续</button>
+  <button class="btn danger" id="btn-stop" onclick="stopScene()">停止当前场景</button>
+  <button class="btn danger" id="btn-master" onclick="masterOff()">一键关闭（总开关）</button>
+  <span class="note" id="ctl-note"></span>
+</div>
+<div class="runsteps" id="runsteps"></div>
+<div class="grid" id="scenes"></div>
+
+<h2>一键性能实测 · 真实任务出真实数字</h2>
+<div class="box">
+  <p class="note">并发提交 6 个轻任务，统计每个节点的真实时延与吞吐，给出最优落点。全部真实推理，无预置数据。</p>
+  <div class="controls">
+    <button class="btn" onclick="bench()">开始性能实测</button>
+    <span class="note" id="bench-status"></span>
+  </div>
+  <div id="bench-out"></div>
+</div>
+
+<h2>纳管维度 · 本系统覆盖的五种异构方式</h2>
+<p class="note" style="margin:-4px 0 10px">每项维度对应上方「场景实测」中的一个真实剧本：点「▶ 运行实测」直接执行，点「对应场景剧本 ↓」跳到对应场景卡片查看完整步骤。</p>
+<div class="grid">
+  <div class="card" id="dim-route">
+    <span class="tag mod">层级路由</span>
+    <h4>层级异构 · 云 / 边 / 端</h4>
+    <p>中心 GPU 池（训练与 70B+ 重推理）、边缘算力箱（现场推理、断网自治）、端侧家庭节点（轻量推理与异步任务）。</p>
+    <div class="mapline">↔ 对应场景：三维路由 · 时延/成本/密级择点</div>
+    <div class="needline"><b>解决需求：</b>同一任务改时延 / 成本 / 密级三个维度，验证落点随之变化且理由可解释——不同优先级的任务自动选对层。</div>
+    <div class="controls">
+      <button class="btn" onclick="runScene('route')">▶ 运行实测</button>
+      <button class="btn gray" onclick="gotoScene('route')">对应场景剧本 ↓</button>
+    </div>
+  </div>
+  <div class="card" id="dim-center">
+    <span class="tag mod">切分调度</span>
+    <h4>切分异构 · vGPU / MPS / MLX</h4>
+    <p>细粒度切分与分时复用，把一块卡拆给多个租户。<b>边界：GB10 硬件不支持 MIG</b>，本系统给出 MPS 策略并如实标注。</p>
+    <div class="mapline">↔ 对应场景：私有云资源池 · 切分与密级准入</div>
+    <div class="needline"><b>解决需求：</b>重推理上中心、真跑 gpu-slicer 出切分建议、L3 机密任务密级与 CC 准入、8 路并发压测——一块卡安全拆给多租户。</div>
+    <div class="controls">
+      <button class="btn" onclick="runScene('center')">▶ 运行实测</button>
+      <button class="btn gray" onclick="gotoScene('center')">对应场景剧本 ↓</button>
+    </div>
+  </div>
+  <div class="card" id="dim-resilience">
+    <span class="tag mod">故障自愈</span>
+    <h4>代际异构 · 跨代际混部</h4>
+    <p>新旧型号同一纳管，不被单一型号绑死；硬件缺货与代际更替由网络规模兜底。</p>
+    <div class="mapline">↔ 对应场景：故障自愈 · 压力场景验证</div>
+    <div class="needline"><b>解决需求：</b>中心中断 / 单节点掉线 / 节点不可信 / 新任务类型逐条触发并自动恢复——代际混部下的韧性兜底。</div>
+    <div class="controls">
+      <button class="btn" onclick="runScene('resilience')">▶ 运行实测</button>
+      <button class="btn gray" onclick="gotoScene('resilience')">对应场景剧本 ↓</button>
+    </div>
+  </div>
+  <div class="card" id="dim-home">
+    <span class="tag mod">可信接入</span>
+    <h4>可信异构 · 密级分级</h4>
+    <p>TEE、远程证明、任务抽检与信誉分；敏感与高 SLA 任务不进入家庭节点，校验失败即撤回中心。</p>
+    <div class="mapline">↔ 对应场景：家庭节点网格 · 轻量下沉与抽检</div>
+    <div class="needline"><b>解决需求：</b>轻量任务下沉端侧、注入作弊后多数决抽检识别并降级信誉、高密级任务拒绝下沉——不可信节点安全纳管。</div>
+    <div class="controls">
+      <button class="btn" onclick="runScene('home')">▶ 运行实测</button>
+      <button class="btn gray" onclick="gotoScene('home')">对应场景剧本 ↓</button>
+    </div>
+  </div>
+  <div class="card" id="dim-edge">
+    <span class="tag mod">边缘自治</span>
+    <h4>复用异构 · 分时与抢占</h4>
+    <p>推理优先、分时复用、排队抢占；高优任务抢占低优并保存 checkpoint，恢复后续算。</p>
+    <div class="mapline">↔ 对应场景：边缘算力箱 · 现场推理自治</div>
+    <div class="needline"><b>解决需求：</b>时延优先落边缘、中心中断自动改派、断网本地续跑、联网回放补记——弱网 / 断网下现场业务不停。</div>
+    <div class="controls">
+      <button class="btn" onclick="runScene('edge')">▶ 运行实测</button>
+      <button class="btn gray" onclick="gotoScene('edge')">对应场景剧本 ↓</button>
+    </div>
+  </div>
+</div>
+
+<h2>实时对照反馈 · 实测 vs 此项目目标</h2>
+<div class="box">
+  <p class="note"><span class="livedot"></span>下列数字每 5 秒由本机真实状态刷新（实测口径，单机伪分布式）；目标列引用此项目规划，待 POC 验证，不作为承诺。<span class="updstamp" id="cmp-stamp">刷新中…</span></p>
+  <table>
+    <thead><tr><th style="width:170px">指标</th><th>本机实测</th><th>此项目目标</th><th style="width:120px">判定</th></tr></thead>
+    <tbody id="cmp-body"><tr><td colspan="4" class="note">载入中…</td></tr></tbody>
+  </table>
+</div>
+
+<h2>JEV 评测 · 实时联动（关联实时后端）</h2>
+<div class="box">
+  <p class="note"><span class="livedot"></span>每次任务终态的 JEV 判定会逐条持久化到后端 <code>data/jev_log.jsonl</code>（跨重启留存），这里每 4 秒自动汇总刷新；完整逐条评测见 <a href="/">实时后端</a> 的「JEV 日志报告」。</p>
+  <div class="kpis" id="pjev-cards">
+    <div class="kpi"><b>—</b><span>累计评测（条）</span></div>
+    <div class="kpi"><b>—</b><span>成功率</span></div>
+    <div class="kpi"><b>—</b><span>多数决分歧（条）</span></div>
+    <div class="kpi"><b>—</b><span>累计收益（¥）</span></div>
+  </div>
+  <div class="distbar" id="pjev-dist" title="判定分布：绿=一致 红=分歧 灰=未校验">
+    <i class="d-ok" style="width:0%"></i><i class="d-div" style="width:0%"></i><i class="d-na" style="width:100%"></i>
+  </div>
+  <div class="note" id="pjev-dist-txt">判定分布载入中…</div>
+  <div class="note" id="pjev-conc" style="margin-top:6px;color:#c4cedb">结论载入中…</div>
+  <div class="note" style="margin-top:4px"><span class="updstamp" id="pjev-stamp"></span></div>
+</div>
+
+<h2>实测口径与诚实边界</h2>
+<div class="box warn">
+  <table>
+    <tr><th style="width:180px">项</th><th>说明</th></tr>
+    <tr><td>单机伪分布式</td><td>当前节点的中心 / 边缘 / 端侧三档是<b>同一块 GB10 的逻辑分片</b>，用于验证调度逻辑；跨机结论需多节点 POC。</td></tr>
+    <tr><td>利用率 85%+</td><td>此项目目标值。单机三分片共享一块卡，实测均值为逻辑值，<b>不等于</b>多节点集群口径。</td></tr>
+    <tr><td>本地消化 70%</td><td>此项目规划口径。面板给出的是"边缘档承接占比"（单机），跨域传输降幅<b>本机无法测量</b>。</td></tr>
+    <tr><td>MIG</td><td>GB10 硬件不支持，系统给出 MPS 策略并标注 <code>decision_only</code>。</td></tr>
+    <tr><td>DCGM / Triton / NIM</td><td>DCGM 未部署（驱动级组件需 root）；Triton / NIM 为目录条目，未实际安装。</td></tr>
+    <tr><td>数据来源标签</td><td>面板每个数字标注：<b>实测</b>（本机真跑）/ <b>推算</b>（由实测按比例外推）/ <b>此项目目标</b>（引用此项目规划，待验证）。</td></tr>
+  </table>
+</div>
+
+<div class="box">
+  <h3>事实演示</h3>
+  <p class="note">点上面任意一张卡片 → 系统<b>真实执行</b>该场景的每一步（提交任务、注入掉线 / 作弊、断网自治、离线回放、并发压测），
+  结果实时显示，同时写入事件流；随后可进入 <a href="/">实时后端</a> 查看调度过程与节点读数。
+  所有演示都是真实链路，没有预置动画。</p>
+  <a class="btn" href="/">进入实时后端 →</a>
+</div>
+
+</div>
+<script>
+var SCENES={}, CUR=null;
+// 场景 → 纳管维度 对应表（与下方五张维度卡片一一对应）
+var DIM_MAP={
+  route:{dim:'层级异构 · 云/边/端',tag:'层级路由'},
+  center:{dim:'切分异构 · vGPU/MPS/MLX',tag:'切分调度'},
+  resilience:{dim:'代际异构 · 跨代际混部',tag:'故障自愈'},
+  home:{dim:'可信异构 · 密级分级',tag:'可信接入'},
+  edge:{dim:'复用异构 · 分时与抢占',tag:'边缘自治'}
+};
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function flash(el){ if(!el)return;
+  el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+function gotoScene(k){
+  var el=document.getElementById('card-'+k);
+  if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); flash(el); }
+}
+function gotoDim(k){
+  var el=document.getElementById('dim-'+k);
+  if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); flash(el); }
+}
+function banner(msg){
+  var b=document.getElementById('busy');
+  b.style.display=msg?'block':'none';
+  b.innerHTML=msg||'';
+}
+function ctlNote(m){document.getElementById('ctl-note').textContent=m||'';}
+async function load(){
+  var box=document.getElementById('scenes');
+  try{
+    var r=await fetch('/api/demo/scenes',{cache:'no-store'});
+    var j=await r.json();
+    SCENES=j.scenes||j||{};          // 兼容：dash 代理已解包 .scenes
+    if(j.ok===false) throw new Error(j.error||'场景接口异常');
+  }catch(e){
+    box.innerHTML='<div class="note" style="padding:10px">场景清单载入失败：'+esc(e.message||e)+
+      '（请确认实时后端在线后刷新本页）</div>';
+    setTimeout(load,4000);
+    return;
+  }
+  box.innerHTML='';
+  if(!Object.keys(SCENES).length){
+    box.innerHTML='<div class="note" style="padding:10px">场景清单为空，正在重试…</div>';
+    setTimeout(load,4000);
+    return;
+  }
+  Object.keys(SCENES).forEach(function(k){
+    var s=SCENES[k];
+    var dim=DIM_MAP[k]||{};
+    var d=document.createElement('div');d.className='card';d.id='card-'+k;
+    d.innerHTML='<span class="tag mod">'+esc(s.module||'')+'</span>'+
+      '<span class="bpr"> '+esc(s.bp||'')+'</span>'+
+      '<h4>'+esc(s.title)+'</h4><p>'+esc(s.desc)+'</p>'+
+      (dim.dim?'<div class="mapline">↔ 对应纳管维度：'+esc(dim.dim)+'</div>':'')+
+      '<ol>'+s.steps.map(function(x){return '<li>'+esc(x.title)+'</li>'}).join('')+'</ol>'+
+      '<div class="steps" id="st-'+k+'"></div>'+
+      '<div class="controls">'+
+        '<button class="btn" data-run="'+k+'">▶ 运行实测</button>'+
+        (dim.dim?'<button class="btn gray" data-dim="'+k+'">对应纳管维度 ↑</button>':'')+
+      '</div>';
+    d.onclick=function(){runScene(k)};
+    var rb=d.querySelector('[data-run]');
+    if(rb) rb.onclick=function(e){ e.stopPropagation(); runScene(k); };
+    var db=d.querySelector('[data-dim]');
+    if(db) db.onclick=function(e){ e.stopPropagation(); gotoDim(k); };
+    box.appendChild(d);
+  });
+  poll();
+}
+async function runScene(k){
+  banner('正在启动「'+(SCENES[k]?esc(SCENES[k].title):k)+'」…');
+  try{
+    var r=await fetch('/api/demo/run?scene='+k,{method:'POST'});
+    var j=await r.json();
+    if(!r.ok||!j.ok){
+      var msg=j.detail||j.error||('HTTP '+r.status);
+      if(/已有场景在运行/.test(msg)){
+        banner('上一个场景还在跑。可等它跑完，或点「停止当前场景」/「一键关闭」再启动新的。');
+        return;
+      }
+      banner('启动失败：'+esc(msg));
+      return;
+    }
+    banner('场景「'+esc(j.title)+'」已启动，共 '+j.steps+' 步，下方步骤条会实时亮起。');
+    CUR=k;
+    document.querySelectorAll('.card').forEach(function(c){c.classList.remove('run')});
+    var c=document.getElementById('card-'+k); if(c) c.classList.add('run');
+    var dc2=document.getElementById('dim-'+k); if(dc2) dc2.classList.add('run');
+    ctlNote('运行中：可用 暂停 / 继续 / 停止');
+  }catch(e){banner('无法连接看板服务：'+e)}
+}
+async function pauseScene(){
+  var r=await fetch('/api/demo/pause',{method:'POST'}); var j=await r.json();
+  ctlNote(j.message||j.error||'');
+}
+async function resumeScene(){
+  var r=await fetch('/api/demo/resume',{method:'POST'}); var j=await r.json();
+  ctlNote(j.message||j.error||'');
+}
+async function stopScene(){
+  var r=await fetch('/api/demo/stop',{method:'POST'}); var j=await r.json();
+  ctlNote(j.message||j.error||'');
+  banner('已请求停止当前场景。');
+}
+async function masterOff(){
+  if(!confirm('一键关闭：停止场景 + 终止在途演示任务 + 停止流量进程 + 清理演示任务记录？'))return;
+  banner('一键关闭中…');
+  var r1=await fetch('/api/demo/stop?all=true',{method:'POST'}); var j1=await r1.json();
+  var r2=await fetch('/api/demo/clear',{method:'POST'}); var j2=await r2.json();
+  banner('已关闭：'+(j1.cleanup?('终止演示任务 '+j1.cleanup.tasks_stopped+' 个、流量进程 '+
+    (j1.cleanup.traffic_killed?'已停':'无')):'场景已停')+
+    (j2.ok?('，清理记录 '+j2.deleted+' 条'):''));
+  ctlNote('总开关已完成');
+  document.querySelectorAll('.card').forEach(function(c){c.classList.remove('run')});
+  CUR=null;
+}
+async function bench(){
+  var st=document.getElementById('bench-status');
+  var out=document.getElementById('bench-out');
+  st.textContent='实测中（约 30–120 秒，真实推理）…';
+  out.style.display='block'; out.textContent='任务已提交，等待真实结果…';
+  try{
+    var r=await fetch('/api/bench/best?tasks=6',{method:'POST'});
+    var j=await r.json();
+    if(!j.ok){st.textContent='失败：'+(j.error||'');return;}
+    st.textContent='完成（'+j.elapsed_s+'s）';
+    var lines=['完成 '+j.finished+'/'+j.submitted+' 条 · 用时 '+j.elapsed_s+'s · 吞吐 '+j.throughput_per_min+' 次/分',''];
+    (j.ranking||[]).forEach(function(x,i){
+      lines.push((i+1)+'. '+x.node+'  平均 '+x.avg_s+'s  最快 '+x.min_s+'s  （'+x.tasks+' 条）');});
+    lines.push('', '最优落点：'+(j.best_node||'-'));
+    // ---- 对照此项目目标 · 实时评测 ----
+    var rate=j.submitted?Math.round(j.finished/j.submitted*100):0;
+    lines.push('','— 对照此项目目标 · 实时评测 —');
+    lines.push('成功率 '+rate+'%（目标 ≥90%）→ '+(rate>=90?'达标':'未达标，差 '+(90-rate)+' pt'));
+    lines.push('GPU 利用率目标 85%+ 为集群口径，单机三片共享一块卡时请看实时对照反馈表的参考值');
+    out.textContent=lines.join('\n');
+  }catch(e){st.textContent='连接失败：'+e}
+}
+// 运行步骤行：以当前步为中心最多展示 3 行（上一步 / 当前步 / 下一步）
+function stepWindow(plan,done,dc,running,status){
+  var total=plan.length, rows=[];
+  function mk(i){
+    var p=plan[i];
+    if(!p) return null;                       // 防御：完成瞬间 dc 可能已越界
+    if(i<dc){var s=done[i]||{};
+      return {cls:(s.ok===true?'ok':(s.status==='skipped'?'':'bad')),
+        ic:(s.ok?'✓':'✕'),txt:p.title+(s.duration_s?' · '+s.duration_s+'s':'')};}
+    if(i===dc&&running){
+      return {cls:'on',ic:(status==='paused'?'⏸':'▶'),txt:p.title+' …（执行中）'};}
+    return {cls:'',ic:'·',txt:p.title};
+  }
+  var idxs=[];
+  if(running&&dc<total){
+    if(dc>0)idxs.push(dc-1);
+    idxs.push(dc);
+    if(dc+1<total)idxs.push(dc+1);
+  }else{
+    for(var i=Math.max(0,total-3);i<total;i++)idxs.push(i);
+  }
+  idxs.forEach(function(i){var r=mk(i); if(r) rows.push(r);});
+  return {rows:rows,total:total,doneCnt:dc};
+}
+async function poll(){
+  try{
+    var j=await (await fetch('/api/demo/status',{cache:'no-store'})).json();
+    var strip=document.getElementById('runsteps');
+    if(j.scene&&SCENES[j.scene]){
+      var plan=(j.plan&&j.plan.length)?j.plan:(SCENES[j.scene].steps||[]);
+      var done=j.steps||[], dc=done.length;
+      var running=(j.status==='running'||j.status==='paused'||j.status==='stopping');
+      var w=stepWindow(plan,done,dc,running,j.status);
+      // 全局运行步骤条（≤3 行）
+      strip.style.display='block';
+      var stTxt=j.status==='running'?'运行中':(j.status==='paused'?'已暂停':
+        (j.status==='stopping'?'停止中':(j.status==='done'?'已完成':'已停止')));
+      strip.innerHTML='<div class="hd">「'+esc(SCENES[j.scene].title)+'」运行步骤 · '+
+        stTxt+' · 第 '+Math.min(dc+ (running?1:0),w.total)+'/'+w.total+' 步（仅显示当前附近 3 行）</div>'+
+        w.rows.map(function(r){
+          return '<div class="rl"><span class="st-ic sp '+r.cls+'">'+r.ic+'</span>'+esc(r.txt)+'</div>';
+        }).join('');
+      // 场景卡片内步骤（同样 ≤3 行）
+      var el=document.getElementById('st-'+j.scene);
+      if(el){
+        el.innerHTML='';
+        w.rows.forEach(function(r){
+          var e=document.createElement('span');
+          e.className='sp '+r.cls;
+          e.textContent=r.ic+' '+r.txt;
+          el.appendChild(e);
+        });
+      }
+      // 高亮同步：页面加载时场景已在运行（如从实时后端启动），两侧卡片一并标记
+      if(running&&CUR!==j.scene){
+        CUR=j.scene;
+        document.querySelectorAll('.card').forEach(function(c){c.classList.remove('run')});
+        var cc=document.getElementById('card-'+j.scene); if(cc)cc.classList.add('run');
+        var dd=document.getElementById('dim-'+j.scene); if(dd)dd.classList.add('run');
+      }
+      // 结束/停止：清除高亮（保留步骤条终态供回看）
+      if(j.status==='done'||j.status==='stopped'){
+        document.querySelectorAll('.card').forEach(function(c){c.classList.remove('run')});
+        ctlNote(j.status==='done'?'已完成':'已停止');
+      }
+    }else{
+      // 场景已被关闭/清空（可能在另一页点了一键关闭）：前端同步清场
+      strip.style.display='none';
+      if(CUR!==null){
+        CUR=null;
+        document.querySelectorAll('.card').forEach(function(c){c.classList.remove('run')});
+        ctlNote(''); banner('');
+      }
+    }
+  }catch(e){}
+  setTimeout(poll,1500);
+}
+// 实时对照反馈：实测 vs 此项目目标（每 5s 刷新，带时间戳与错误显现）
+var _lastCmp='';
+async function cmp(){
+  var stamp=document.getElementById('cmp-stamp');
+  try{
+    var d=await (await fetch('/api/state',{cache:'no-store'})).json();
+    if(!d||!d.nodes) throw new Error((d&&d.error)||'状态接口异常');
+    var online=d.nodes.filter(function(n){return n.status==='online'});
+    var totalN=d.nodes.length||1;
+    var onlineRate=Math.round(online.length/totalN*100);
+    var doneT=d.tasks.filter(function(t){return t.state==='done'});
+    var term=d.tasks.filter(function(t){return ['done','failed','rejected'].indexOf(t.state)>=0});
+    var termN=term.length||1;
+    var okRate=Math.round(doneT.length/termN*100);
+    var lat=d.tasks.filter(function(t){return t.finished_at&&t.created_at})
+      .map(function(t){return (t.finished_at-t.created_at)/1000});
+    var avgLat=lat.length?(lat.reduce(function(a,b){return a+b},0)/lat.length):0;
+    var avg=online.length?online.reduce(function(s,n){return s+n.util},0)/online.length:0;
+    var rows=[
+      ['节点在线率', online.length+'/'+d.nodes.length+' · '+onlineRate+'%', '≥90%（GO/NO-GO）',
+        onlineRate>=90?'ok':'no:'+(90-onlineRate)],
+      ['任务成功率', doneT.length+'/'+termN+' · '+okRate+'%', '此项目目标：三级池兜底（≥90%）',
+        okRate>=90?'ok':'no:'+(90-okRate)],
+      ['平均任务时延', avgLat.toFixed(1)+'s', '按 SLA 分档', 'ref:单机排队会推高均值，集群口径需 POC'],
+      ['平均 GPU 利用率', Math.round(avg)+'%', '85%+（单机口径，仅参考）',
+        'ref:距 85% 目标 '+(Math.round(avg)>=85?('+'+(Math.round(avg)-85)):(Math.round(avg)-85))+' pt（集群口径才有效）']
+    ];
+    var bb=document.getElementById('cmp-body'); if(!bb) return;
+    var sig=JSON.stringify(rows);
+    var changed=sig!==_lastCmp; _lastCmp=sig;
+    bb.innerHTML='';
+    rows.forEach(function(r){
+      var tr=document.createElement('tr');
+      if(changed) tr.className='flashchg';
+      var v=r[3], judge;
+      if(v==='ok') judge='<span style="color:#a4d97c">达标</span>';
+      else if(v.indexOf('no:')===0) judge='<span style="color:#e88a7d">未达标 · 差 '+v.slice(3)+' pt</span>';
+      else judge='<span class="note">参考 · '+esc(v.slice(4))+'</span>';
+      tr.innerHTML='<td>'+esc(r[0])+'</td><td><b>'+esc(r[1])+'</b></td>'+
+        '<td class="note">'+esc(r[2])+'</td><td>'+judge+'</td>';
+      bb.appendChild(tr);
+    });
+    var now=new Date();
+    stamp.textContent='最后刷新 '+String(now.getHours()).padStart(2,'0')+':'+
+      String(now.getMinutes()).padStart(2,'0')+':'+String(now.getSeconds()).padStart(2,'0');
+    stamp.style.color='';
+  }catch(e){
+    stamp.textContent='刷新失败：'+esc(e.message||e)+'（4s 后重试）';
+    stamp.style.color='#e88a7d';
+  }
+  setTimeout(cmp,5000);
+}
+// JEV 评测 · 实时联动（每 4s，基于后端持久化留痕 data/jev_log.jsonl）
+function setKpi(cardIdx,val){
+  var b=document.querySelectorAll('#pjev-cards .kpi b')[cardIdx];
+  if(!b) return;
+  if(b.textContent!==String(val)){
+    b.textContent=val;
+    b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump');
+  }
+}
+async function pjev(){
+  var stamp=document.getElementById('pjev-stamp');
+  try{
+    var j=await (await fetch('/api/jev/report?limit=8',{cache:'no-store'})).json();
+    if(!j.ok) throw new Error(j.error||'JEV 接口异常');
+    var a=j.analysis||{};
+    var dist=a.dist||{ok:0,div:0,na:0};
+    setKpi(0,a.total||0);
+    setKpi(1,(a.pass_rate||0)+'%');
+    setKpi(2,dist.div||0);
+    setKpi(3,'¥'+(a.total_amount_cny||0));
+    var tot=Math.max((dist.ok||0)+(dist.div||0)+(dist.na||0),1);
+    var bars=document.querySelectorAll('#pjev-dist i');
+    bars[0].style.width=(dist.ok/tot*100)+'%';
+    bars[1].style.width=(dist.div/tot*100)+'%';
+    bars[2].style.width=(dist.na/tot*100)+'%';
+    document.getElementById('pjev-dist-txt').textContent=
+      '判定分布：多数决一致 '+(dist.ok||0)+' 条 · 分歧 '+(dist.div||0)+
+      ' 条 · 未校验 '+(dist.na||0)+' 条（近 10 条成功率 '+
+      (a.recent10==null?'—':a.recent10+'%')+' · 趋势 '+(a.trend||'—')+'）';
+    document.getElementById('pjev-conc').textContent='结论：'+(a.conclusion||'—');
+    var now=new Date();
+    stamp.textContent='最后刷新 '+String(now.getHours()).padStart(2,'0')+':'+
+      String(now.getMinutes()).padStart(2,'0')+':'+String(now.getSeconds()).padStart(2,'0');
+    stamp.style.color='';
+  }catch(e){
+    stamp.textContent='JEV 刷新失败：'+esc(e.message||e)+'（4s 后重试）';
+    stamp.style.color='#e88a7d';
+  }
+  setTimeout(pjev,4000);
+}
+load();cmp();pjev();
+</script>
+</body>
+</html>
