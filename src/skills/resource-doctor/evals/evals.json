@@ -1,0 +1,56 @@
+{
+  "skill": "resource-doctor",
+  "version": "1.0.0",
+  "evals": [
+    {
+      "id": "rd-issues-detected",
+      "category": "correctness",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--state-file", "evals/fixtures/state_with_issues.json"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {
+          "summary.lost": 1,
+          "summary.online": 2,
+          "summary.low_mem_nodes": ["edge-1"]
+        },
+        "json_contains_codes": ["node_lost", "low_free_mem", "untrusted"]
+      }
+    },
+    {
+      "id": "rd-healthy",
+      "category": "correctness",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--state-file", "evals/fixtures/state_healthy.json"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"summary.lost": 0, "summary.online": 2},
+        "json_contains_codes": ["healthy"]
+      }
+    },
+    {
+      "id": "rd-output-shape",
+      "category": "discoverability",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--state-file", "evals/fixtures/state_healthy.json"],
+      "expect": {
+        "exit_code": 0,
+        "json_keys": ["summary", "findings", "recommendations", "nodes"]
+      }
+    },
+    {
+      "id": "rd-missing-file-negative",
+      "category": "robustness",
+      "kind": "negative",
+      "run": ["python", "tool.py", "--state-file", "evals/fixtures/does_not_exist.json"],
+      "expect": {"exit_code_nonzero": true, "no_traceback_leak": true}
+    },
+    {
+      "id": "rd-garbage-negative",
+      "category": "robustness",
+      "kind": "negative",
+      "run_in_shell": "echo 'not-json' | python tool.py --state-file /dev/stdin",
+      "expect": {"exit_code_nonzero": true}
+    }
+  ]
+}
