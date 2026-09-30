@@ -1,0 +1,162 @@
+{
+  "A_verification_tokens": {
+    "constants": {
+      "N": 1000,
+      "avg_input_tokens": 827,
+      "output_tokens": 33,
+      "price_in_per_M": 0.5,
+      "price_out_per_M": 2.0,
+      "jev_price_in_per_M": 0.042
+    },
+    "strategies": {
+      "S0_no_verify": {
+        "node_calls": 1000,
+        "gpu_input_tokens": 827000,
+        "gpu_output_tokens": 33000,
+        "jev_input_tokens": 0,
+        "modeled_cost_usd": 0.4795,
+        "detection_coverage": 0.0
+      },
+      "S1_full_majority": {
+        "node_calls": 3000,
+        "gpu_input_tokens": 2481000,
+        "gpu_output_tokens": 99000,
+        "jev_input_tokens": 0,
+        "modeled_cost_usd": 1.4385,
+        "detection_coverage": 1.0
+      },
+      "S2_adaptive_q5": {
+        "node_calls": 1100,
+        "gpu_input_tokens": 909700,
+        "gpu_output_tokens": 36300,
+        "jev_input_tokens": 860000,
+        "modeled_cost_usd": 0.5636,
+        "detection_coverage": 1.0,
+        "skip_rate": 0.0,
+        "bad_caught_measured": 50,
+        "bad_total": 50
+      },
+      "S2_adaptive_q10": {
+        "node_calls": 1200,
+        "gpu_input_tokens": 992400,
+        "gpu_output_tokens": 39600,
+        "jev_input_tokens": 860000,
+        "modeled_cost_usd": 0.6115,
+        "detection_coverage": 1.0,
+        "skip_rate": 0.0,
+        "bad_caught_measured": 100,
+        "bad_total": 100
+      },
+      "S2_adaptive_q20": {
+        "node_calls": 1400,
+        "gpu_input_tokens": 1157800,
+        "gpu_output_tokens": 46200,
+        "jev_input_tokens": 860000,
+        "modeled_cost_usd": 0.7074,
+        "detection_coverage": 1.0,
+        "skip_rate": 0.0,
+        "bad_caught_measured": 200,
+        "bad_total": 200
+      },
+      "S2_adaptive_q30": {
+        "node_calls": 1600,
+        "gpu_input_tokens": 1323200,
+        "gpu_output_tokens": 52800,
+        "jev_input_tokens": 860000,
+        "modeled_cost_usd": 0.8033,
+        "detection_coverage": 1.0,
+        "skip_rate": 0.0,
+        "bad_caught_measured": 300,
+        "bad_total": 300
+      }
+    },
+    "adaptive": {
+      "q5": {
+        "node_calls": 1100,
+        "gpu_input_tokens": 909700,
+        "gpu_output_tokens": 36300,
+        "jev_input_tokens": 860000,
+        "modeled_cost_usd": 0.5636,
+        "detection_coverage": 1.0,
+        "skip_rate": 0.0,
+        "bad_caught_measured": 50,
+        "bad_total": 50
+      },
+      "q10": {
+        "node_calls": 1200,
+        "gpu_input_tokens": 992400,
+        "gpu_output_tokens": 39600,
+        "jev_input_tokens": 860000,
+        "modeled_cost_usd": 0.6115,
+        "detection_coverage": 1.0,
+        "skip_rate": 0.0,
+        "bad_caught_measured": 100,
+        "bad_total": 100
+      },
+      "q20": {
+        "node_calls": 1400,
+        "gpu_input_tokens": 1157800,
+        "gpu_output_tokens": 46200,
+        "jev_input_tokens": 860000,
+        "modeled_cost_usd": 0.7074,
+        "detection_coverage": 1.0,
+        "skip_rate": 0.0,
+        "bad_caught_measured": 200,
+        "bad_total": 200
+      },
+      "q30": {
+        "node_calls": 1600,
+        "gpu_input_tokens": 1323200,
+        "gpu_output_tokens": 52800,
+        "jev_input_tokens": 860000,
+        "modeled_cost_usd": 0.8033,
+        "detection_coverage": 1.0,
+        "skip_rate": 0.0,
+        "bad_caught_measured": 300,
+        "bad_total": 300
+      }
+    },
+    "savings_vs_full_majority": {
+      "vs_full_majority_node_calls_saved_pct": 0.6,
+      "vs_full_majority_cost_saved_pct": 0.575,
+      "verification_overhead_vs_no_verify_full_pct": 2.0,
+      "verification_overhead_vs_no_verify_adaptive_pct": 0.2
+    }
+  },
+  "B_gpu_slicing": {
+    "workload_total_mem_gb": 116,
+    "usable_per_gpu_gb": 117.76,
+    "naive_one_model_per_gpu": {
+      "gpus": 4,
+      "gpu_utilization": 0.227
+    },
+    "wnidia_sliced": {
+      "gpus": 1,
+      "gpu_utilization": 0.906,
+      "allocated_gb": 116.0,
+      "total_gpu_memory_utilization": 0.907,
+      "deferred_models": [],
+      "selected_mode": "mps"
+    },
+    "gpu_count_reduction_pct": 0.75,
+    "utilization_lift_points": 67.9
+  },
+  "C_preemption_reclaim_star": {
+    "assumptions_star": {
+      "preemption_events_per_day": 20,
+      "spot_window_min": 30,
+      "avg_remaining_fraction": 0.7
+    },
+    "reclaimed_gpu_min_per_day": 420.0,
+    "reclaimed_gpu_hours_per_day": 7.0,
+    "reclaimed_gpu_hours_per_month": 210.0
+  },
+  "D_idle_onboarding_star": {
+    "assumptions_star": {
+      "idle_nodes_onboarded": 5,
+      "usable_gb_each": 24
+    },
+    "added_usable_capacity_gb": 120,
+    "equivalent_dgx_spark_units": 0.94
+  }
+}
