@@ -1,0 +1,41 @@
+{
+  "_note": "场景：所有真实引擎均不可用（未装/未起/显存被占）。验证选路是否明确回落到 mock 并标注不可用于真实推理。；v5.1 目录扩展后补 triton/nim 探活（容器类引擎在离线节点必然不可用）",
+  "live": {
+    "tensorfold": {
+      "healthy": false,
+      "detail": "不可达：Connection refused",
+      "backend": "cross-vendor",
+      "exact": true
+    },
+    "vllm": {
+      "healthy": false,
+      "detail": "不可达：Connection refused",
+      "backend": "nvidia-cuda",
+      "exact": false
+    },
+    "ollama": {
+      "healthy": false,
+      "detail": "不可达：Connection refused",
+      "backend": "nvidia-gb10",
+      "exact": false
+    },
+    "mock": {
+      "healthy": true,
+      "detail": "mock 引擎常驻可用",
+      "backend": "cpu",
+      "exact": true
+    },
+    "triton": {
+      "healthy": false,
+      "detail": "NGC 容器不可用（无 nvidia runtime）：Connection refused",
+      "backend": "nvidia-cuda",
+      "exact": false
+    },
+    "nim": {
+      "healthy": false,
+      "detail": "NGC 镜像未拉取（离线环境无 NGC API Key）：Connection refused",
+      "backend": "nvidia-cuda",
+      "exact": false
+    }
+  }
+}
