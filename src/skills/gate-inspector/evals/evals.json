@@ -1,0 +1,62 @@
+{
+  "skill": "gate-inspector",
+  "version": "1.0.0",
+  "evals": [
+    {
+      "id": "gi-offline-sample-sufficient",
+      "category": "correctness",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--state-file",
+              "evals/fixtures/state_sample.json"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"source": "offline"},
+        "json_keys": ["overall", "gates", "action"],
+        "json_nonempty": ["gates"]
+      }
+    },
+    {
+      "id": "gi-uptime-gate-computed",
+      "category": "correctness",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--state-file",
+              "evals/fixtures/state_sample.json"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"gates.0.gate": "home_uptime", "gates.0.sample": 6,
+                        "gates.0.verdict": "go"}
+      }
+    },
+    {
+      "id": "gi-consistency-gate-below-target",
+      "category": "correctness",
+      "kind": "negative",
+      "run": ["python", "tool.py", "--state-file",
+              "evals/fixtures/state_sample.json"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"gates.1.gate": "spot_consistency",
+                        "gates.1.verdict": "no-go"},
+        "json_contains": ["抽检一致率不足"]
+      }
+    },
+    {
+      "id": "gi-cost-gates-need-live",
+      "category": "robustness",
+      "kind": "negative",
+      "run": ["python", "tool.py", "--state-file",
+              "evals/fixtures/state_sample.json"],
+      "expect": {
+        "exit_code": 0,
+        "json_contains": ["成本类指标需要控制面完整账本才能算出"]
+      }
+    },
+    {
+      "id": "gi-missing-snapshot-negative",
+      "category": "robustness",
+      "kind": "negative",
+      "run": ["python", "tool.py", "--state-file", "evals/fixtures/nope.json"],
+      "expect": {"exit_code_nonzero": true}
+    }
+  ]
+}
