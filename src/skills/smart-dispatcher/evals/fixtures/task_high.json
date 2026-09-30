@@ -1,0 +1,2 @@
+{"prompt": "紧急实时任务", "task_type": "chat", "sla": "sla-1",
+ "secret": "L1", "tokens_in": 32, "need_mem_gb": 0.9}
