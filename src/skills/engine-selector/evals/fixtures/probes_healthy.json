@@ -1,0 +1,24 @@
+{
+  "_note": "场景：DGX Spark 上 ollama(:11434) 常驻、TensorFold(:8080) 已起、vLLM(:8101) 已起。三引擎全部探活通过。",
+  "live": {
+    "tensorfold": {
+      "healthy": true, "endpoint": "http://127.0.0.1:8080/v1/models",
+      "detail": "http://127.0.0.1:8080/v1/models → 200", "latency_ms": 12,
+      "models": ["Qwen3.8-27B-MLX-4bit"], "backend": "cross-vendor", "exact": true
+    },
+    "vllm": {
+      "healthy": true, "endpoint": "http://127.0.0.1:8101/v1/models",
+      "detail": "http://127.0.0.1:8101/v1/models → 200", "latency_ms": 9,
+      "models": ["nemotron-nvfp4"], "backend": "nvidia-cuda", "exact": false
+    },
+    "ollama": {
+      "healthy": true, "endpoint": "http://127.0.0.1:11434/v1/models",
+      "detail": "http://127.0.0.1:11434/v1/models → 200", "latency_ms": 15,
+      "models": ["Qwen3.8-27B-GGUF:latest"], "backend": "nvidia-gb10", "exact": false
+    },
+    "mock": {
+      "healthy": true, "endpoint": "in-process",
+      "detail": "mock 引擎常驻可用", "latency_ms": 0, "backend": "cpu", "exact": true
+    }
+  }
+}
