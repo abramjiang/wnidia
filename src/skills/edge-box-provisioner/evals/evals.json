@@ -1,0 +1,54 @@
+{
+  "skill": "edge-box-provisioner",
+  "version": "1.0.0",
+  "evals": [
+    {
+      "id": "ebp-thor-default-plan",
+      "category": "correctness",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--gpu", "thor", "--nodes", "1"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"gpu": "thor", "box.label": "Jetson AGX Thor 开发者套件",
+                        "box.mem_gb": 128, "placement.need_dedicated_hvac": false},
+        "json_keys": ["preinstall", "enroll_command", "offline_acceptance",
+                      "task_classes", "subscription_hint", "assumption"],
+        "json_nonempty": ["preinstall", "offline_acceptance"]
+      }
+    },
+    {
+      "id": "ebp-cc-l2-upgrades-subscription",
+      "category": "correctness",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--gpu", "thor", "--cc-level", "CC-L2"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"subscription_hint.tier": "P0"}
+      }
+    },
+    {
+      "id": "ebp-nodes-scale-power-budget",
+      "category": "correctness",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--gpu", "thor", "--nodes", "3"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"nodes": 3, "placement.power_budget_w": "120–390"}
+      }
+    },
+    {
+      "id": "ebp-bad-gpu-negative",
+      "category": "robustness",
+      "kind": "negative",
+      "run": ["python", "tool.py", "--gpu", "b200"],
+      "expect": {"exit_code_nonzero": true}
+    },
+    {
+      "id": "ebp-bad-cc-negative",
+      "category": "robustness",
+      "kind": "negative",
+      "run": ["python", "tool.py", "--cc-level", "CC-L9"],
+      "expect": {"exit_code_nonzero": true}
+    }
+  ]
+}
