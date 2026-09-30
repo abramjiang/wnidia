@@ -1,0 +1,43 @@
+{
+  "_note": "离线门槛体检快照：6 个节点（可用率偏高）、10 个任务（7 done）、8 条 verify 事件（7 一致）、12 条账本。用于验证样本充足时的判定。",
+  "nodes": [
+    {"node": "cloud-0", "tier": "cloud", "uptime_ratio": 0.995},
+    {"node": "edge-1", "tier": "edge", "uptime_ratio": 0.96},
+    {"node": "edge-2", "tier": "edge", "uptime_ratio": 0.94},
+    {"node": "home-1", "tier": "home", "uptime_ratio": 0.92},
+    {"node": "home-2", "tier": "home", "uptime_ratio": 0.9},
+    {"node": "cpu-1", "tier": "cpu", "uptime_ratio": 0.99}
+  ],
+  "tasks": [
+    {"task": "t1", "state": "done"}, {"task": "t2", "state": "done"},
+    {"task": "t3", "state": "done"}, {"task": "t4", "state": "done"},
+    {"task": "t5", "state": "done"}, {"task": "t6", "state": "done"},
+    {"task": "t7", "state": "done"}, {"task": "t8", "state": "queued"},
+    {"task": "t9", "state": "failed"}, {"task": "t10", "state": "queued"}
+  ],
+  "events": [
+    {"kind": "verify", "message": "t1 多数决校验一致（3 节点）"},
+    {"kind": "verify", "message": "t2 多数决校验一致（3 节点）"},
+    {"kind": "verify", "message": "t3 语义校验一致（3 节点，Jev 语义判定）"},
+    {"kind": "verify", "message": "t4 多数决校验一致（3 节点）"},
+    {"kind": "verify", "message": "t5 语义校验一致（3 节点，Jev 语义判定）"},
+    {"kind": "verify", "message": "t6 多数决校验一致（3 节点）"},
+    {"kind": "verify", "message": "t7 多数决校验一致（3 节点）"},
+    {"kind": "verify", "message": "t8 多数决校验一致（3 节点）"},
+    {"kind": "verify", "message": "cpu-1 结果与多数不一致，已降信誉分"}
+  ],
+  "ledger": [
+    {"node": "edge-1", "tokens": 1000, "amount_cny": 0.002},
+    {"node": "edge-1", "tokens": 1200, "amount_cny": 0.0024},
+    {"node": "edge-2", "tokens": 900, "amount_cny": 0.0018},
+    {"node": "edge-2", "tokens": 1100, "amount_cny": 0.0022},
+    {"node": "home-1", "tokens": 800, "amount_cny": 0.0016},
+    {"node": "home-2", "tokens": 700, "amount_cny": 0.0014},
+    {"node": "cloud-0", "tokens": 2000, "amount_cny": 0.004},
+    {"node": "edge-1", "tokens": 1500, "amount_cny": 0.003},
+    {"node": "edge-2", "tokens": 1300, "amount_cny": 0.0026},
+    {"node": "home-1", "tokens": 600, "amount_cny": 0.0012},
+    {"node": "cloud-0", "tokens": 2200, "amount_cny": 0.0044},
+    {"node": "edge-1", "tokens": 1400, "amount_cny": 0.0028}
+  ]
+}
