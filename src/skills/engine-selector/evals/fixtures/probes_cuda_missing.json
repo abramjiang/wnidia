@@ -1,0 +1,54 @@
+{
+  "_note": "场景：GX10 无 nvidia runtime（docker 仅 runc）→ TensorFold 的 NGC 容器路径起不来；vLLM 未部署。仅 ollama 可用。这是本机现状，用于验证降级链是否给出正确回落。；v5.1 目录扩展后补 triton/nim 探活（容器类引擎在离线节点必然不可用）",
+  "live": {
+    "tensorfold": {
+      "healthy": false,
+      "endpoint": "",
+      "detail": "http://127.0.0.1:8080/v1/models 不可达：Connection refused",
+      "latency_ms": null,
+      "models": [],
+      "backend": "cross-vendor",
+      "exact": true
+    },
+    "vllm": {
+      "healthy": false,
+      "endpoint": "",
+      "detail": "http://127.0.0.1:8101/v1/models 不可达：Connection refused",
+      "latency_ms": null,
+      "models": [],
+      "backend": "nvidia-cuda",
+      "exact": false
+    },
+    "ollama": {
+      "healthy": true,
+      "endpoint": "http://127.0.0.1:11434/v1/models",
+      "detail": "http://127.0.0.1:11434/v1/models → 200",
+      "latency_ms": 15,
+      "models": [
+        "Qwen3.8-27B-GGUF:latest"
+      ],
+      "backend": "nvidia-gb10",
+      "exact": false
+    },
+    "mock": {
+      "healthy": true,
+      "endpoint": "in-process",
+      "detail": "mock 引擎常驻可用",
+      "latency_ms": 0,
+      "backend": "cpu",
+      "exact": true
+    },
+    "triton": {
+      "healthy": false,
+      "detail": "NGC 容器不可用（无 nvidia runtime）：Connection refused",
+      "backend": "nvidia-cuda",
+      "exact": false
+    },
+    "nim": {
+      "healthy": false,
+      "detail": "NGC 镜像未拉取（离线环境无 NGC API Key）：Connection refused",
+      "backend": "nvidia-cuda",
+      "exact": false
+    }
+  }
+}
