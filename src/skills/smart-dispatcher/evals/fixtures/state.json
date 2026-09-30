@@ -1,0 +1,18 @@
+{
+  "nodes": [
+    {"node": "cloud-0", "tier": "cloud", "role": "prefill", "status": "online",
+     "util": 60.0, "free_mem_gb": 40.0, "reputation": 1.0, "trusted": true,
+     "sovereign_region": "local", "kv_hit": 0.2},
+    {"node": "edge-1", "tier": "edge", "role": "decode", "status": "online",
+     "util": 50.0, "free_mem_gb": 6.0, "reputation": 1.0, "trusted": false,
+     "sovereign_region": "local", "kv_hit": 0.6},
+    {"node": "cpu-1", "tier": "cpu", "role": "cpu", "status": "online",
+     "util": 20.0, "free_mem_gb": 4.0, "reputation": 1.0, "trusted": false,
+     "sovereign_region": "local", "kv_hit": 0.1}
+  ],
+  "tasks": [
+    {"task": "spot-batch-1", "node": "edge-1", "state": "running",
+     "sla": "sla-3"}
+  ],
+  "events": []
+}
