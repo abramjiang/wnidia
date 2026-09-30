@@ -1,0 +1,11 @@
+{
+  "nodes": [
+    {"node": "cloud-0", "tier": "cloud", "role": "prefill", "status": "online",
+     "util": 72.0, "free_mem_gb": 40.0, "reputation": 1.0, "cheat": false},
+    {"node": "edge-1", "tier": "edge", "role": "decode", "status": "online",
+     "util": 55.0, "free_mem_gb": 0.5, "reputation": 1.0, "cheat": false},
+    {"node": "cpu-1", "tier": "cpu", "role": "cpu", "status": "lost",
+     "util": 0.0, "free_mem_gb": 4.0, "reputation": 0.8, "cheat": true}
+  ],
+  "tasks": [], "events": [], "ledger": []
+}
