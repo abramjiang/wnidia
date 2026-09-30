@@ -102,17 +102,45 @@ curl -s -H "Authorization: Bearer previewtoken" \
 ## 📁 项目结构
 
 ```
-wnidia/
-├── controller/        # API / 调度 / JEV / demo 后端
-│   ├── main.py        # 路由入口（/admin/jev/report、/admin/demo/run、/admin/demo/scenes）
-│   ├── demo.py        # 场景剧本与 JEV 报告（_jev_log_persist / _jev_analysis）
-│   └── jev_local.py   # JEV 本地校验
-├── dashboard/         # 看板 / 门户前端（性能前端 + 实时后端 + JEV 联动）
-├── data/              # jev_log.jsonl 等运行数据
-├── scripts/
-│   └── deploy_gx10.sh # 一键部署（MODE=gpu / preview）
-└── docs/             # 本仓库文档
+wnidia/                      # 仓库根：参赛文档 + 源码 + 证据
+├── README.md                # 本文件（项目首页）
+├── R9开发报告.md            # r9 开发报告
+├── docs/                    # 参赛文档
+│   ├── ARCHITECTURE.md      # 系统架构（含架构图）
+│   ├── DEPLOY.md            # 部署指南
+│   ├── BP_ALIGNMENT.md      # BP 目标 vs 实测逐项对照
+│   ├── PITCH.md             # 完整宣讲稿
+│   ├── PITCH_4MIN.md        # 4 分钟极速版
+│   └── SLIDES.md            # 逐页幻灯片大纲
+├── src/                     # r9 源码（已脱敏，真实 IP 以占位符替代）
+│   ├── controller/          # API / 调度 / JEV / demo 后端
+│   │   ├── main.py          # 路由入口
+│   │   ├── demo.py          # 场景剧本与 JEV 报告
+│   │   └── static/          # 性能前端 / 实时后端 / JEV 沙盒
+│   ├── agent/ worker/       # 边缘 Agent 与工作节点
+│   ├── scripts/             # 一键部署等脚本
+│   ├── tests/               # 测试套件
+│   └── skills/              # 调度 / 切分 / 纳管等能力插件
+└── evidence/                # 证据固化（哈希 + 时间戳凭证，见下）
 ```
+
+> 源码位于 `src/`，与文档分离；其中的真实 IP 已替换为 `<PUBLIC_IP>` 等占位符。
+
+---
+
+## 🔒 证据固化（溯源与权益）
+
+为证明「某时间点某内容已存在且未被篡改」，本仓库提供**确定性打包 + SHA256 + 链上时间戳**：
+
+| 对象 | SHA256 |
+|---|---|
+| 源码快照（134 个文件） | `8cf80d228d01fd12ab9cf90f6ab56f04159256a88bb20efe9d5153bbbe3cf575` |
+| 发布包 `wnidia_v5.1_gx10_r9.zip` | `607c67ef72b3cea26e9a014721fce846185e7d1e77c1958a5d84ea63db171c34` |
+
+- **凭证**：`evidence/*.ots`（OpenTimestamps，比特币锚定，免费公开可验）
+- **可复现**：打包是**确定性**的（文件按字节序排序、mtime/uid/gid/权限固定、gzip 头 mtime 归零），任何人重新打包都得到同一哈希
+- **工具**：`evidence/wnidia_notarize.py`（打包 → SHA256 → 提交时间戳）
+- **发行版本**：[v5.1-r9](https://github.com/abramjiang/wnidia/releases/tag/v5.1-r9)
 
 ---
 
