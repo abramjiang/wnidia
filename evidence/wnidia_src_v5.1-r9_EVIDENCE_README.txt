@@ -1,0 +1,43 @@
+WNIDIA 证据包 · 验证说明
+================================================
+生成时间(UTC): 2026-09-30T18:18:25Z
+源: /Users/mac/WorkBuddy/2026-09-28-01-53-37/outputs/wnidia-code-sanitized
+打包/目标文件 SHA256:
+  8cf80d228d01fd12ab9cf90f6ab56f04159256a88bb20efe9d5153bbbe3cf575
+
+一、确定性校验（任何人可复现）
+------------------------------------------------
+在任意机器上对同一目录重新打包，应得到完全相同的 SHA256。
+若不同，说明文件内容已被改动。
+
+  shasum -a 256 <打包文件>
+
+二、OpenTimestamps（比特币锚定，免费）
+------------------------------------------------
+凭证文件: wnidia_src_v5.1-r9.ots
+OTS 凭证在生成后需等待比特币网络确认（通常数小时），之后执行：
+
+  ots upgrade wnidia_src_v5.1-r9.ots     # 升级为完整证明
+  ots verify  wnidia_src_v5.1-r9.ots     # 验证（应看到 Bitcoin block height）
+
+未装 ots 可安装：pip install opentimestamps-client
+
+三、RFC3161 可信时间戳（国内司法认可度高）
+------------------------------------------------
+若已配置 TSA_URL，会生成 wnidia_src_v5.1-r9.tsq（请求）与 wnidia_src_v5.1-r9.tsr（响应）。
+验证：
+
+  openssl ts -verify -in wnidia_src_v5.1-r9.tsr -queryfile wnidia_src_v5.1-r9.tsq -CAfile <TSA证书>
+
+国内常用可信时间戳服务（需注册获取接口地址与证书）：
+  - 联合信任时间戳服务中心（www.tsa.cn）
+  - 各省市 CA / 电子认证服务机构提供的 RFC3161 接口
+接入方式：以环境变量传入接口地址后重跑本脚本
+  TSA_URL=https://your-tsa/tsa python3 wnidia_notarize.py --dir ... --out ...
+
+四、法律要点
+------------------------------------------------
+- 本证据包证明「该 SHA256 对应的内容在时间戳所示时刻已存在」。
+- 时间戳 + 内容哈希 = 存在性与完整性证明；配合 GitHub 公开时间线，
+  可形成完整的原创性证据链。
+- 建议将证据包（含 .ots / .tsr）与 GitHub Release 一并归档保存。
