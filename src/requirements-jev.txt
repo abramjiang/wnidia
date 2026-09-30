@@ -1,0 +1,4 @@
+# 可选依赖：仅在启用 local 后端或自建 scripts/serve_jev.py 时安装。
+# 基础控制器（requirements.txt）无需 torch，mock 模式离线即可运行。
+torch>=2.1
+transformers>=4.40
