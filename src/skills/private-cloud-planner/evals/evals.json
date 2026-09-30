@@ -1,0 +1,69 @@
+{
+  "skill": "private-cloud-planner",
+  "version": "1.0.0",
+  "evals": [
+    {
+      "id": "pcp-l2-60-concurrency",
+      "category": "correctness",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--concurrency", "60", "--grade", "L2",
+              "--years", "3"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"grade": "L2", "concurrency": 60,
+                        "topology.gpu_nodes": 3, "topology.backup_nodes": 1,
+                        "topology.interconnect": "25G 堆叠组网，支持横向扩展"},
+        "json_keys": ["capex", "opex", "tco", "hidden_cost_warning", "delivery"],
+        "json_nonempty": ["capex.items"]
+      }
+    },
+    {
+      "id": "pcp-vgpu-license-counted",
+      "category": "correctness",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--concurrency", "60", "--grade", "L2",
+              "--use-vgpu", "--gpus-per-node", "4", "--years", "3"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"opex.vgpu_license_cny_per_year": 288000,
+                        "hidden_cost_warning.per_year_cny": 288000},
+        "json_contains": ["最大的隐性成本"]
+      }
+    },
+    {
+      "id": "pcp-no-vgpu-zero-license",
+      "category": "correctness",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--concurrency", "60", "--years", "3"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"opex.vgpu_license_cny_per_year": 0}
+      }
+    },
+    {
+      "id": "pcp-l4-forces-backup",
+      "category": "security",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--concurrency", "100", "--grade", "L4"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"topology.backup_nodes": 1, "topology.gpu_nodes": 4},
+        "json_contains": ["专属池"]
+      }
+    },
+    {
+      "id": "pcp-zero-concurrency-negative",
+      "category": "robustness",
+      "kind": "negative",
+      "run": ["python", "tool.py", "--concurrency", "0"],
+      "expect": {"exit_code_nonzero": true}
+    },
+    {
+      "id": "pcp-bad-delivery-negative",
+      "category": "robustness",
+      "kind": "negative",
+      "run": ["python", "tool.py", "--delivery", "free"],
+      "expect": {"exit_code_nonzero": true}
+    }
+  ]
+}
