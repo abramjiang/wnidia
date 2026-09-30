@@ -1,0 +1,6 @@
+{
+  "models": [
+    {"name": "stepfun-large", "weights_gb": 40, "kv_gb": 10, "concurrency": 4},
+    {"name": "edge-small", "weights_gb": 8, "kv_gb": 2, "concurrency": 8}
+  ]
+}
