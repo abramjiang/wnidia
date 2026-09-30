@@ -1,0 +1,25 @@
+# syntax=docker/dockerfile:1
+# WNIDIA 控制面镜像（API :9000 + 看板 :8888）。构建上下文为仓库根目录。
+FROM python:3.12-slim AS runtime
+
+WORKDIR /app
+
+# 先装依赖，利用层缓存
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 拷贝控制面源码与入口
+COPY controller ./controller
+COPY deploy/entrypoint.controller.sh /entrypoint.controller.sh
+RUN chmod +x /entrypoint.controller.sh && mkdir -p data
+
+# 非 root 运行
+RUN useradd -m appuser && chown -R appuser /app /entrypoint.controller.sh
+USER appuser
+
+EXPOSE 9000 8888
+
+HEALTHCHECK --interval=15s --timeout=4s --start-period=8s --retries=3 \
+    CMD python -c "import urllib.request;urllib.request.urlopen('http://127.0.0.1:9000/healthz')" || exit 1
+
+ENTRYPOINT ["/entrypoint.controller.sh"]
