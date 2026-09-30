@@ -1,0 +1,9 @@
+{
+  "nodes": [
+    {"node": "cloud-0", "tier": "cloud", "role": "prefill", "status": "online",
+     "util": 65.0, "free_mem_gb": 40.0, "reputation": 1.0, "cheat": false},
+    {"node": "edge-1", "tier": "edge", "role": "decode", "status": "online",
+     "util": 48.0, "free_mem_gb": 6.0, "reputation": 1.0, "cheat": false}
+  ],
+  "tasks": [], "events": [], "ledger": []
+}
