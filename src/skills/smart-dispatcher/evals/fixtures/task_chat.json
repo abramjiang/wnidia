@@ -1,0 +1,2 @@
+{"prompt": "你好，解释下算力调度", "task_type": "chat", "sla": "sla-2",
+ "secret": "L1", "tokens_in": 32, "need_mem_gb": 0.9}
