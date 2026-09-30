@@ -1,0 +1,68 @@
+{
+  "skill": "smart-dispatcher",
+  "version": "1.0.0",
+  "evals": [
+    {
+      "id": "sd-chat-to-decode",
+      "category": "correctness",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--task-file", "evals/fixtures/task_chat.json",
+              "--state-file", "evals/fixtures/state.json"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"admitted": "ok", "node": "edge-1",
+                        "preempt.needed": false}
+      }
+    },
+    {
+      "id": "sd-high-preempt",
+      "category": "effectiveness",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--task-file", "evals/fixtures/task_high.json",
+              "--state-file", "evals/fixtures/state.json"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"admitted": "ok", "preempt.needed": true,
+                        "preempt.spot_task": "spot-batch-1"}
+      }
+    },
+    {
+      "id": "sd-secret-trusted-only",
+      "category": "security",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--task-file", "evals/fixtures/task_secret.json",
+              "--state-file", "evals/fixtures/state.json"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"admitted": "ok", "node": "cloud-0"},
+        "json_candidate_nodes": ["cloud-0"]
+      }
+    },
+    {
+      "id": "sd-explainable",
+      "category": "discoverability",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--task-file", "evals/fixtures/task_chat.json",
+              "--state-file", "evals/fixtures/state.json"],
+      "expect": {"exit_code": 0, "json_nonempty": ["reasons", "candidates"]}
+    },
+    {
+      "id": "sd-no-capacity-negative",
+      "category": "robustness",
+      "kind": "negative",
+      "run_in_shell": "python tool.py --task-file evals/fixtures/task_chat.json --state-file evals/fixtures/state_all_lost.json",
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"admitted": "no_capacity", "node": null}
+      }
+    },
+    {
+      "id": "sd-bad-task-negative",
+      "category": "robustness",
+      "kind": "negative",
+      "run": ["python", "tool.py", "--task", "not-json",
+              "--state-file", "evals/fixtures/state.json"],
+      "expect": {"exit_code_nonzero": true}
+    }
+  ]
+}
