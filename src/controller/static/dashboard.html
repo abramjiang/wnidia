@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WNIDIA 实时后端 · 算力调度看板</title>
+<style>
+:root{--navy:#162A4A;--green:#6FAC00;--amber:#B56A00;--red:#C0392B;--blue:#3F8FCB;
+  --bg:#0f1b2d;--card:#16263d;--line:#243650;--ink:#e7edf5;--mut:#8b99ad;--gl:#8fcB1f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'PingFang SC','Microsoft YaHei','Noto Sans',sans-serif;
+  background:var(--bg);color:var(--ink);font-size:13px}
+header{padding:16px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px}
+header .logo{width:30px;height:30px;border-radius:7px;background:var(--navy);display:grid;place-items:center}
+header .logo svg{width:18px;height:18px;stroke:var(--green);fill:none;stroke-width:2.2}
+header h1{font-size:17px;font-weight:800}
+header .tag{font-size:11px;color:var(--mut);margin-left:6px}
+header .clock{margin-left:auto;font-size:12px;color:var(--mut)}
+header a{color:var(--blue);font-size:12px;margin-left:12px}
+.wrap{padding:18px 22px;max-width:1320px;margin:0 auto}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:14px 16px}
+.stat .v{font-size:24px;font-weight:800}
+.stat .l{font-size:11.5px;color:var(--mut);margin-top:2px}
+.stat .v.g{color:#8fcB1f}.stat .v.b{color:#5aa9e6}.stat .v.a{color:#e0a53f}
+.grid2{display:grid;grid-template-columns:1.45fr 1fr;gap:16px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:11px;margin-bottom:16px;overflow:hidden}
+.panel h2{font-size:13px;font-weight:700;padding:11px 15px;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:8px}
+.panel h2::before{content:"";width:4px;height:14px;background:var(--green);border-radius:2px}
+.panel .body{padding:8px 15px 12px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;color:var(--mut);font-weight:600;padding:7px 8px;border-bottom:1px solid var(--line);font-size:11px}
+td{padding:7px 8px;border-bottom:1px solid #1d2c43}
+.pill{font-size:10.5px;padding:2px 8px;border-radius:10px;font-weight:700}
+.t-cloud{background:#1c3a5c;color:#7db8ec}.t-edge{background:#23401c;color:#a4d97c}
+.t-home{background:#43341c;color:#e6c178}.t-cpu{background:#3a3a3a;color:#bbb}
+.st{font-size:10.5px;padding:2px 7px;border-radius:6px;font-weight:700}
+.s-running{background:#23401c;color:#a4d97c}.s-done{background:#1c3a5c;color:#7db8ec}
+.s-queued{background:#3d3520;color:#e6c178}.s-preempted{background:#4a2c1c;color:#e89a6a}
+.s-rejected,.s-failed{background:#4a1f1c;color:#e88a7d}.s-lost{background:#4a1f1c;color:#e88a7d}
+.bar{height:7px;background:#0d1828;border-radius:5px;overflow:hidden;width:90px;display:inline-block;vertical-align:middle}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--green),#9fd62a)}
+.uval{font-size:10.5px;color:var(--mut);margin-left:6px}
+.events{max-height:330px;overflow:auto}
+.ev{display:flex;gap:9px;padding:6px 2px;border-bottom:1px solid #1d2c43;font-size:11.8px}
+.ev .k{flex:none;font-size:10px;font-weight:700;padding:1px 6px;border-radius:5px;height:fit-content;margin-top:1px}
+.k-register{background:#23401c;color:#a4d97c}.k-bind{background:#1c3a5c;color:#7db8ec}
+.k-done{background:#1c3a5c;color:#7db8ec}.k-preempt,.k-lost,.k-redispatch,.k-resume{background:#4a2c1c;color:#e89a6a}
+.k-reject,.k-verify,.k-cheat,.k-loop-error,.k-guardrail{background:#4a1f1c;color:#e88a7d}
+.k-demo{background:#2b3a57;color:#9ec5f0}
+.ev.new{animation:flash 1.2s ease-out}
+@keyframes flash{from{background:#243b5c}to{background:transparent}}
+.stepbar{display:flex;gap:5px;flex-wrap:wrap;padding:8px 0 2px}
+.stepbar .sp{font-size:10.5px;padding:2px 7px;border-radius:5px;background:#1c2a42;color:#8b99ad}
+.stepbar .sp.on{background:#23401c;color:#a4d97c;box-shadow:0 0 0 1px #3f7d2a inset;animation:pulse 1.4s infinite}
+.stepbar .sp.ok{background:#1c3a5c;color:#7db8ec}
+.stepbar .sp.bad{background:#4a1f1c;color:#e88a7d}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
+.ev .m{color:#c4cedb}.ev .t{color:var(--mut);margin-left:auto;flex:none;font-size:10px}
+.note{font-size:11px;color:var(--mut);padding:8px 15px;border-top:1px solid var(--line)}
+/* --- P3 新增 --- */
+.tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.tier{border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:#132238}
+.tier b{font-size:12.5px}
+.tier .n{font-size:11px;color:var(--mut);margin:4px 0 6px}
+.tier .row{display:flex;justify-content:space-between;font-size:11px;color:#c4cedb;margin:2px 0}
+.src{font-size:9.5px;padding:1px 5px;border-radius:4px;margin-left:5px;font-weight:700}
+.src-m{background:#1c3a5c;color:#7db8ec}
+.src-e{background:#3d3520;color:#e6c178}
+.src-b{background:#2a2f3a;color:#b9c2d0}
+.pipe{display:flex;gap:4px;align-items:center}
+.pipe i{flex:1;height:5px;border-radius:3px;background:#1c2a42}
+.pipe i.on{background:linear-gradient(90deg,var(--green),#9fd62a)}
+.legend{font-size:10.5px;color:var(--mut);margin-top:6px}
+/* --- 启动面板 --- */
+.btn{display:inline-block;padding:7px 13px;border-radius:8px;background:var(--green);
+  color:#0b1220;font-weight:700;font-size:12px;border:0;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--gl);border:1px solid var(--green)}
+.btn.danger{background:transparent;color:#e88a7d;border:1px solid #5c2b28}
+.btn.gray{background:#1c2a42;color:#c4cedb}
+.btn.blue{background:#1c3a5c;color:#7db8ec}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btnrow{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:8px 0}
+.btnrow .sep{width:1px;height:20px;background:var(--line);margin:0 3px}
+.scenebtn{background:#1c2a42;color:#c4cedb;border:1px solid var(--line);border-radius:8px;
+  padding:7px 12px;font-size:12px;cursor:pointer;font-weight:600}
+.scenebtn:hover{border-color:var(--green);color:var(--gl)}
+.scenebtn.run{border-color:var(--green);color:#a4d97c;box-shadow:0 0 0 1px #3f7d2a inset}
+.outbox{background:#0d1828;border-radius:8px;padding:10px 12px;margin-top:8px;
+  font-family:Menlo,Consolas,monospace;font-size:11.5px;color:#c4cedb;display:none;white-space:pre-wrap}
+.chartwrap{position:relative}
+.charthint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  color:var(--mut);font-size:13px;pointer-events:none;text-align:center;padding:0 20px}
+.jevframe{width:100%;height:520px;border:1px solid var(--line);border-radius:8px;background:#0f1115}
+.livedot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#a4d97c;
+  margin-right:6px;animation:livepulse 1.6s infinite;vertical-align:middle}
+@keyframes livepulse{0%,100%{opacity:1}50%{opacity:.3}}
+.bump{animation:bump .5s ease-out}
+@keyframes bump{0%{transform:scale(1.25);color:#fff}100%{transform:scale(1)}}
+.distbar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:#1c2a42;margin:6px 0}
+.distbar i{display:block;height:100%;transition:width .6s ease}
+.d-ok{background:#4a7d2a}.d-div{background:#8a4a3d}.d-na{background:#3a4356}
+details.jevbox{margin-top:10px}
+details.jevbox summary{cursor:pointer;font-size:12px;color:var(--mut);padding:4px 0}
+.badge{font-size:10px;padding:2px 7px;border-radius:6px;font-weight:700}
+.b-ok{background:#23401c;color:#a4d97c}.b-no{background:#4a1f1c;color:#e88a7d}.b-na{background:#2a2f3a;color:#b9c2d0}
+@media(max-width:1000px){.stats{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <span class="logo"><svg viewBox="0 0 24 24"><path d="M9 21V11l7 6 7-6v10"/></svg></span>
+  <h1>WNIDIA 实时后端<span class="tag">算力调度看板 · 单机伪分布式（三档共享一块 GB10，已标注）</span></h1>
+  <a href="/portal" target="_blank" rel="noopener">性能前端 ↗</a>
+  <span class="clock" id="clock"></span>
+</header>
+<div class="wrap">
+  <div class="stats">
+    <div class="stat"><div class="v" id="s-nodes">0</div><div class="l">在线节点</div></div>
+    <div class="stat"><div class="v g" id="s-run">0</div><div class="l">运行中任务</div></div>
+    <div class="stat"><div class="v b" id="s-done">0</div><div class="l">已完成任务</div></div>
+    <div class="stat"><div class="v a" id="s-util">0%</div><div class="l">平均 GPU 利用率</div></div>
+  </div>
+
+  <!-- 一键启动面板：场景启动 + 控制 + 性能实测 + 流量，全在真实体系上跑 -->
+  <div class="panel"><h2>一键启动面板 · 项目规划事实演示</h2>
+    <div class="body">
+      <div style="font-size:11px;color:var(--mut);margin:2px 0 6px">点场景按钮即在<b>真实调度体系</b>上执行该项目规划剧本；下方步骤条会逐步实时亮起，没有预置动画。</div>
+      <div class="btnrow" id="scene-btns"></div>
+      <div class="btnrow">
+        <button class="btn gray" id="btn-pause" onclick="pauseScene()">暂停</button>
+        <button class="btn gray" id="btn-resume" onclick="resumeScene()">继续</button>
+        <button class="btn danger" id="btn-stop" onclick="stopScene()">停止当前场景</button>
+        <button class="btn danger" id="btn-master" onclick="masterOff()">一键关闭（总开关）</button>
+        <span class="sep"></span>
+        <button class="btn blue" id="btn-traffic" onclick="trafficToggle()">启动流量发生器</button>
+        <span style="font-size:11px;color:var(--mut)" id="traffic-note"></span>
+      </div>
+      <div style="font-size:11px;color:var(--mut);margin-top:8px">项目规划 · 场景步骤（真实执行，逐步亮起）</div>
+      <div style="font-size:12px;color:#8b99ad;margin:4px 0 2px" id="demo-title">未运行场景</div>
+      <div class="stepbar" id="demo-steps"></div>
+      <div class="btnrow" style="margin-top:10px">
+        <button class="btn" id="btn-bench" onclick="benchRun()">一键性能实测</button>
+        <span style="font-size:11px;color:var(--mut)" id="bench-note">并发提交 6 个真实轻任务，统计各节点真实时延/吞吐与最优落点，并给出日志统计。</span>
+      </div>
+      <div class="outbox" id="bench-out"></div>
+    </div></div>
+
+  <!-- P3：时间轴曲线 -->
+  <div class="panel"><h2>实时趋势（近 5 分钟，2 秒采样）</h2>
+    <div class="body">
+      <div class="chartwrap">
+        <svg id="chart" viewBox="0 0 600 130" preserveAspectRatio="none"
+             style="width:100%;height:130px;display:block;background:#0d1828;border-radius:8px">
+          <line x1="0" y1="40"  x2="600" y2="40"  stroke="#1d2c43" stroke-width="1"/>
+          <line x1="0" y1="80"  x2="600" y2="80"  stroke="#1d2c43" stroke-width="1"/>
+          <line x1="0" y1="120" x2="600" y2="120" stroke="#243650" stroke-width="1.5"/>
+          <text x="6" y="16" fill="#5b6470" font-size="10">100%</text>
+          <text x="6" y="44" fill="#5b6470" font-size="10">66%</text>
+          <text x="6" y="84" fill="#5b6470" font-size="10">33%</text>
+          <text x="6" y="124" fill="#5b6470" font-size="10">0</text>
+          <polyline id="ln-util" fill="none" stroke="#8fcB1f" stroke-width="2.4"/>
+          <polyline id="ln-run"  fill="none" stroke="#5aa9e6" stroke-width="2.2"/>
+          <polyline id="ln-done" fill="none" stroke="#7d8aa5" stroke-width="1.6" stroke-dasharray="4 3"/>
+          <text id="v-util" x="552" y="16" fill="#8fcB1f" font-size="11" font-weight="700"></text>
+          <text id="v-run"  x="552" y="32" fill="#5aa9e6" font-size="11" font-weight="700"></text>
+        </svg>
+        <div id="hint" class="charthint">当前空闲：在上方启动场景 / 流量发生器 / 性能实测后，这里会出现真实曲线</div>
+      </div>
+      <div class="legend">
+        <span style="color:#8fcB1f">■</span> 平均利用率 %
+        <span style="color:#5aa9e6;margin-left:10px">■</span> 在途任务数
+        <span style="color:#7d8aa5;margin-left:10px">■</span> 累计完成
+        <span style="margin-left:12px">数据来源：<b>实测</b>（本机真跑，2s 采样）</span>
+      </div>
+    </div></div>
+
+  <!-- P3：三层拓扑 -->
+  <div class="panel"><h2>三层资源池（中心 / 边缘 / 端侧 / CPU）</h2>
+    <div class="body"><div class="tiers" id="tiers"></div>
+      <div class="legend">单机伪分布式：三档为同一块 GB10 的逻辑分片，跨机结论需多节点 POC。</div>
+    </div></div>
+
+  <!-- 调度引擎与语义评审实时反馈 -->
+  <div class="grid2">
+    <div class="panel"><h2>调度引擎反馈（harness 实时数据）</h2>
+      <div class="body">
+        <div class="tiers" id="fb-harness"></div>
+        <div class="legend">队列 / 派发 / 完成 / 事件速率与 prompt 内存 spool，均来自调度主循环的真实计数。</div>
+      </div></div>
+    <div class="panel"><h2>语义评审反馈（JEV · 本地离线引擎）</h2>
+      <div class="body">
+        <div class="tiers" id="fb-jev"></div>
+        <div class="legend">多数决等价判定调用量与判定来源分布（真实评审 / 本地离线 / 回退）。</div>
+      </div></div>
+  </div>
+
+  <!-- P3：指标对照（实测 vs 此项目目标） -->
+  <div class="panel"><h2>指标对照（实测 vs 此项目目标）</h2>
+    <div class="body">
+      <table>
+        <thead><tr><th>指标</th><th>本机实测</th><th>此项目口径</th><th>判定（达标/差距）</th><th>来源</th></tr></thead>
+        <tbody id="bp"></tbody>
+      </table>
+      <div class="legend">带「此项目目标」的数值为规划假设（待 POC 验证），不作为承诺；本机实测为单机口径，不等于集群结论。</div>
+    </div></div>
+
+  <!-- JEV 日志报告：评测每次任务执行与收益实现 -->
+  <div class="panel"><h2>JEV 日志报告 · 逐任务执行与收益实现</h2>
+    <div class="body">
+      <div class="tiers" id="jev-sum"></div>
+      <table style="margin-top:8px">
+        <thead><tr><th>任务</th><th>状态</th><th>落点/引擎</th><th>时延</th><th>tokens</th><th>JEV 判定</th><th>收益(¥)</th><th>来源</th></tr></thead>
+        <tbody id="jev-items"><tr><td colspan="8" class="legend">载入中…</td></tr></tbody>
+      </table>
+      <div class="legend">每行「简介」综合：执行状况（落点/时延）+ JEV 判定（多数决一致性）+ 收益实现（真实计量金额，估算会标注）。数据全部来自真实留痕。</div>
+    </div></div>
+
+  <!-- Jev 决策增强层 · 实时评测与日志分析（活数据，关联界面） -->
+  <div class="panel"><h2>Jev 决策增强层 · 实时评测与日志分析</h2>
+    <div class="body">
+      <div class="legend" style="margin:2px 0 8px"><span class="livedot"></span>每条任务终态的 JEV 判定<b>逐条持久化</b>到 <code>data/jev_log.jsonl</code>（跨重启留存），本面板每 4 秒自动汇总刷新：判定分布、按节点聚合、收益合计、趋势与结论。数据真实留痕，可复核。</div>
+      <div class="tiers" id="jlive-cards"></div>
+      <div style="margin-top:10px;font-size:11px;color:var(--mut)">判定分布（绿=多数决一致 · 红=分歧 · 灰=未校验）</div>
+      <div class="distbar" id="jlive-dist">
+        <i class="d-ok" style="width:0%"></i><i class="d-div" style="width:0%"></i><i class="d-na" style="width:100%"></i>
+      </div>
+      <div class="legend" id="jlive-dist-txt" style="margin-top:2px">载入中…</div>
+      <table style="margin-top:8px">
+        <thead><tr><th>落点节点</th><th>任务数</th><th>平均时延</th><th>收益(¥)</th><th>分歧次数</th></tr></thead>
+        <tbody id="jlive-nodes"><tr><td colspan="5" class="legend">载入中…</td></tr></tbody>
+      </table>
+      <div class="outbox" id="jlive-conc" style="display:block;margin-top:10px">结论载入中…</div>
+      <div class="legend" style="margin-top:6px"><span id="jlive-stamp"></span> · 留存文件：controller data/jev_log.jsonl（每次刷新自动增量追加，按任务去重）</div>
+      <details class="jevbox">
+        <summary>离线沙盒（与 jevclient.py 确定性 mock 逐条对齐：入口护栏 / 选择性预检 / 多数决语义判定 / 25 项自检，嵌入式）</summary>
+        <iframe class="jevframe" src="/jev-sandbox" title="Jev 决策增强层本地沙盒"></iframe>
+      </details>
+      <div class="btnrow" style="margin-top:8px">
+        <button class="btn blue" id="btn-logana" onclick="logAnalyze()">深度日志分析（停止后执行）</button>
+        <span style="font-size:11px;color:var(--mut)">上方为实时自动汇总；此按钮输出更细的异常清单（失败/拒绝/分歧逐条）。</span>
+      </div>
+      <div class="outbox" id="logana-out"></div>
+    </div></div>
+
+  <div class="grid2">
+    <div>
+      <div class="panel"><h2>节点资源</h2><div class="body"><table id="nodes">
+        <thead><tr><th>节点</th><th>角色</th><th>利用率</th><th>空闲显存</th><th>信誉</th><th>状态</th></tr></thead>
+        <tbody></tbody></table></div></div>
+      <div class="panel"><h2>任务调度与阶段流水线</h2><div class="body"><table id="tasks">
+        <thead><tr><th>任务</th><th>SLA</th><th>密级</th><th>阶段</th><th>节点</th><th>状态</th></tr></thead>
+        <tbody></tbody></table></div>
+        <div class="note">阶段由真实进度推导：排队 → 派发 → 预填充 → 解码 → 收尾 → 完成（P0 已修：完成前不封顶 100%）。</div></div>
+    </div>
+    <div>
+      <div class="panel"><h2>事件流</h2><div class="body events" id="events"></div>
+        <div class="note">韧性事件（抢占/掉线/重路由/校验）与场景步骤实时呈现。</div></div>
+    </div>
+  </div>
+</div>
+<script>
+var H={util:[],run:[],done:[]}, MAXP=150;
+var seenEv={}, SCENES={}, TRAFFIC_ON=false;
+function pct(x){return Math.round((x||0)*100)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function stageOf(t){
+  if(t.state==='done') return {name:'完成',p:1};
+  if(t.state==='queued') return {name:'排队',p:0.04};
+  if(t.state==='binding') return {name:'派发',p:0.10};
+  if(t.state==='preempted') return {name:'已抢占（待续算）',p:Math.max(t.progress||0,0.01)};
+  var p=t.progress||0;
+  if(p<0.20) return {name:'预填充',p:p};
+  if(p<0.96) return {name:'解码',p:p};
+  return {name:'收尾',p:p};
+}
+function draw(){
+  function pts(arr,mx){ if(!arr.length) return '';
+    var n=arr.length, m=Math.max(mx,1);
+    return arr.map(function(v,i){return (i/(Math.max(n-1,1))*600).toFixed(1)+','+
+      (120-(v/m*108)).toFixed(1);}).join(' '); }
+  document.getElementById('ln-util').setAttribute('points',pts(H.util,100));
+  document.getElementById('ln-run').setAttribute('points',pts(H.run,Math.max(8,Math.max.apply(null,H.run.concat([1])))));
+  document.getElementById('ln-done').setAttribute('points',pts(H.done,Math.max(10,Math.max.apply(null,H.done.concat([1])))));
+  var lastU=H.util.length?H.util[H.util.length-1]:0;
+  var lastR=H.run.length?H.run[H.run.length-1]:0;
+  document.getElementById('v-util').textContent=lastU+'%';
+  document.getElementById('v-run').textContent=lastR+' 在途';
+  var flat=H.util.every(function(v){return v===0}) && H.run.every(function(v){return v===0});
+  document.getElementById('hint').style.display=flat?'flex':'none';
+}
+async function tick(){
+  var d;
+  try{ d=await (await fetch('/api/state',{cache:'no-store'})).json(); }catch(e){return;}
+  var online=d.nodes.filter(function(n){return n.status==='online'});
+  document.getElementById('s-nodes').textContent=online.length;
+  var running=d.tasks.filter(function(t){return t.state==='running'});
+  var done=d.tasks.filter(function(t){return t.state==='done'});
+  document.getElementById('s-run').textContent=running.length;
+  document.getElementById('s-done').textContent=done.length;
+  var avg=online.length?online.reduce(function(s,n){return s+n.util},0)/online.length:0;
+  document.getElementById('s-util').textContent=Math.round(avg)+'%';
+  H.util.push(Math.round(avg)); H.run.push(running.length); H.done.push(done.length);
+  ['util','run','done'].forEach(function(k){ if(H[k].length>MAXP) H[k].shift(); });
+  draw();
+
+  // 三层拓扑
+  var groups={cloud:[],edge:[],home:[],cpu:[]};
+  d.nodes.forEach(function(n){ (groups[n.tier]||groups.cpu).push(n); });
+  var tb=document.getElementById('tiers'); tb.innerHTML='';
+  ['cloud','edge','home','cpu'].forEach(function(k){
+    var g=groups[k]; if(!g.length) return;
+    var on=g.filter(function(n){return n.status==='online'}).length;
+    var u=g.length?Math.round(g.reduce(function(s,n){return s+n.util},0)/g.length):0;
+    var el=document.createElement('div'); el.className='tier';
+    el.innerHTML='<b>'+({cloud:'中心层 · 私有云',edge:'边缘层 · 算力箱',
+      home:'端侧层 · 家庭网格',cpu:'CPU 层 · 通用'}[k])+'</b>'+
+      '<div class="n">'+on+'/'+g.length+' 在线 · 平均利用率 '+u+'%</div>'+
+      '<div class="bar" style="width:100%"><i style="width:'+u+'%"></i></div>'+
+      g.map(function(n){return '<div class="row"><span>'+esc(n.node)+
+        ' <span class="pill t-'+esc(n.tier)+'">'+esc(n.role)+'</span></span><span>'+
+        Math.round(n.util)+'% · '+(n.free_mem_gb||0).toFixed(1)+'GB</span></span>';}).join('');
+    tb.appendChild(el);
+  });
+
+  // 指标对照（实测 vs 此项目目标）
+  var term=d.tasks.filter(function(t){return ['done','failed','rejected'].indexOf(t.state)>=0});
+  var okN=done.length, termN=term.length||1;
+  var lat=d.tasks.filter(function(t){return t.finished_at&&t.created_at})
+    .map(function(t){return (t.finished_at-t.created_at)/1000});
+  var avgLat=lat.length?(lat.reduce(function(a,b){return a+b},0)/lat.length):0;
+  var bound=d.tasks.filter(function(t){return t.node});
+  var edgeN=bound.filter(function(t){
+    var n=d.nodes.filter(function(x){return x.node===t.node})[0];
+    return n && n.tier==='edge';}).length;
+  var onlineRate=Math.round(online.length/Math.max(d.nodes.length,1)*100);
+  var okRate=Math.round(okN/termN*100);
+  var edgePct=bound.length?Math.round(edgeN/bound.length*100):0;
+  var avgU=Math.round(avg);
+  function vd(ok,gap,ref){ // 判定文案：达标(+gap)/未达标差gap/参考
+    if(ref) return '<span style="color:#8b99ad">'+ref+'</span>';
+    return ok?'<span style="color:#a4d97c">达标'+(gap>0?'（超 '+gap+' pt）':'')+'</span>':
+      '<span style="color:#e88a7d">未达标 · 差 '+gap+' pt</span>';
+  }
+  var rows=[
+    ['节点在线率', (online.length+'/'+d.nodes.length)+' · '+onlineRate+'%',
+     'GO/NO-GO ≥90%（100 节点 ×90 天）', vd(onlineRate>=90,Math.abs(onlineRate-90)), '实测'],
+    ['任务成功率', okN+'/'+termN+' · '+okRate+'%', 'SLA 由三级池兜底（≥90%）',
+     vd(okRate>=90,Math.abs(okRate-90)), '实测'],
+    ['平均任务时延', avgLat.toFixed(1)+'s', '按 SLA 分档（无单一门槛）',
+     vd(0,0,'参考：单机排队等待会推高均值'), '实测'],
+    ['边缘档承接占比', edgePct+'%', '此项目：约 70% 本地消化（待 POC）',
+     vd(0,0,'参考：距 70% 口径 '+(edgePct>=70?('+'+(edgePct-70)):(edgePct-70))+' pt（单机口径）'), '实测'],
+    ['平均 GPU 利用率', avgU+'%', '此项目目标 85%+（单机口径，不可直接比较）',
+     vd(0,0,'参考：距 85% 目标 '+(avgU>=85?('+'+(avgU-85)):(avgU-85))+' pt（集群口径才有效）'), '实测'],
+    ['抽检一致率 ≥99%', '—', '此项目 GO/NO-GO 门槛，需多节点实测',
+     vd(0,0,'待实测'), '此项目目标']
+  ];
+  var bb=document.getElementById('bp'); bb.innerHTML='';
+  rows.forEach(function(r){
+    var cls=r[4]==='实测'?'src-m':(r[4]==='推算'?'src-e':'src-b');
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td>'+esc(r[0])+'</td><td><b>'+esc(r[1])+'</b></td><td>'+esc(r[2])+
+      '</td><td>'+r[3]+'</td><td><span class="src '+cls+'">'+esc(r[4])+'</span></td>';
+    bb.appendChild(tr);
+  });
+
+  // 节点表
+  var nb=document.querySelector('#nodes tbody');nb.innerHTML='';
+  d.nodes.slice().sort(function(a,b){return a.node.localeCompare(b.node)}).forEach(function(n){
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td><b>'+esc(n.node)+'</b></td>'+
+      '<td><span class="pill t-'+esc(n.tier)+'">'+esc(n.tier)+'</span> '+esc(n.role)+'</td>'+
+      '<td><span class="bar"><i style="width:'+Math.min(n.util,100)+'%"></i></span>'+
+      '<span class="uval">'+Math.round(n.util)+'%</span></td>'+
+      '<td>'+(n.free_mem_gb||0).toFixed(1)+' GB</td>'+
+      '<td>'+(n.reputation||0).toFixed(1)+(n.cheat?' ⚠':'')+'</td>'+
+      '<td><span class="st s-'+esc(n.status)+'">'+esc(n.status)+'</span></td>';
+    nb.appendChild(tr);
+  });
+
+  // 任务表 + 阶段流水线
+  var tbk=document.querySelector('#tasks tbody');tbk.innerHTML='';
+  d.tasks.slice().reverse().slice(0,14).forEach(function(t){
+    var s=stageOf(t);
+    var seg=[0.04,0.10,0.20,0.96,1.0];
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td>'+esc(t.task)+'</td><td>'+esc(t.sla)+'</td><td>'+esc(t.secret)+'</td>'+
+      '<td><span class="pipe">'+seg.map(function(x){
+        return '<i class="'+(s.p>=x?'on':'')+'"></i>';}).join('')+'</span> '+
+      '<span class="uval">'+esc(s.name)+' '+pct(s.p)+'%</span></td>'+
+      '<td>'+esc(t.node||'-')+'</td><td><span class="st s-'+esc(t.state)+'">'+esc(t.state)+'</span></td>';
+    tbk.appendChild(tr);
+  });
+
+  // 场景步骤条（一键启动面板内，逐步实时亮起）
+  renderDemo(d.demo||{});
+
+  // 事件流（新条目高亮）
+  var eb=document.getElementById('events');eb.innerHTML='';
+  (d.events||[]).forEach(function(e){
+    var div=document.createElement('div');div.className='ev';
+    if(!seenEv[e.id]){ div.className+=' new'; seenEv[e.id]=1; }
+    var dtm=new Date(e.ts);var tm=dtm.getHours()+':'+String(dtm.getMinutes()).padStart(2,'0')+
+      ':'+String(dtm.getSeconds()).padStart(2,'0');
+    div.innerHTML='<span class="k k-'+esc(e.kind)+'">'+esc(e.kind)+'</span>'+
+      '<span class="m">'+esc(e.message)+'</span><span class="t">'+tm+'</span>';
+    eb.appendChild(div);
+  });
+}
+
+// ---------------- 场景步骤条（当前步实时亮起） ----------------
+function renderDemo(dm){
+  var dt=document.getElementById('demo-title'), sb=document.getElementById('demo-steps');
+  sb.innerHTML='';
+  if(!dm.scene){
+    dt.textContent='当前空闲 · 尚未运行任何场景（点上方场景按钮启动真实剧本；这不是运行失败，只是还没开始）';
+    document.querySelectorAll('.scenebtn').forEach(function(c){c.classList.remove('run')});
+    return;
+  }
+  var plan=(dm.plan&&dm.plan.length)?dm.plan:[];
+  var done=dm.steps||[], dc=done.length;
+  var okN=done.filter(function(s){return s.ok}).length;
+  var running=(dm.status==='running'||dm.status==='paused'||dm.status==='stopping');
+  if(dm.status==='done'||dm.status==='stopped'){
+    document.querySelectorAll('.scenebtn').forEach(function(c){c.classList.remove('run')});
+  }
+  var total=dm.total||plan.length||done.length;
+  dt.innerHTML='<b style="color:#9ec5f0">'+esc(dm.scene)+'</b> · '+esc(dm.status)+
+    ' · 成功 '+okN+'/'+total+(dm.elapsed_s!=null?' · '+dm.elapsed_s+'s':'');
+  if(!plan.length){
+    done.forEach(function(s){
+      var e=document.createElement('span');
+      e.className='sp '+(s.ok===true?'ok':(s.status==='skipped'?'':'bad'));
+      e.textContent=(s.ok?'✓ ':'✕ ')+s.title+(s.duration_s?' ('+s.duration_s+'s)':'');
+      sb.appendChild(e);
+    });
+    return;
+  }
+  plan.forEach(function(p,i){
+    var e=document.createElement('span');
+    if(i<dc){
+      var s=done[i];
+      e.className='sp '+(s.ok===true?'ok':(s.status==='skipped'?'':'bad'));
+      e.textContent=(s.ok?'✓ ':'✕ ')+p.title+(s.duration_s?' ('+s.duration_s+'s)':'');
+    }else if(i===dc&&running){
+      e.className='sp on';
+      e.textContent=(dm.status==='paused'?'⏸ ':'▶ ')+p.title+' …';
+    }else{
+      e.className='sp'; e.textContent='· '+p.title;
+    }
+    sb.appendChild(e);
+  });
+}
+
+// ---------------- 一键启动面板：场景 / 控制 / 性能实测 / 流量 ----------------
+async function loadScenes(){
+  try{
+    var j=await (await fetch('/api/demo/scenes',{cache:'no-store'})).json();
+    SCENES=j.scenes||j||{};
+  }catch(e){ SCENES={}; }
+  var box=document.getElementById('scene-btns'); box.innerHTML='';
+  Object.keys(SCENES).forEach(function(k){
+    var b=document.createElement('button'); b.className='scenebtn'; b.id='sb-'+k;
+    b.textContent='▶ '+(SCENES[k].title||k);
+    b.title=(SCENES[k].desc||'');
+    b.onclick=function(){runScene(k)};
+    box.appendChild(b);
+  });
+}
+function ctlMsg(m){ /* 轻量提示：写入场景标题行右侧不另开元素，用 title 行 */ }
+async function runScene(k){
+  document.getElementById('demo-title').textContent='正在启动「'+(SCENES[k]?SCENES[k].title:k)+'」…';
+  try{
+    var r=await fetch('/api/demo/run?scene='+k,{method:'POST'});
+    var j=await r.json();
+    if(!j.ok){
+      var msg=j.detail||j.error||('HTTP '+r.status);
+      document.getElementById('demo-title').textContent=/已有场景在运行/.test(msg)?
+        '上一个场景还在跑：可等它跑完，或点「停止当前场景」/「一键关闭」再启动新的。':'启动失败：'+msg;
+      return;
+    }
+    document.querySelectorAll('.scenebtn').forEach(function(c){c.classList.remove('run')});
+    var b=document.getElementById('sb-'+k); if(b) b.classList.add('run');
+  }catch(e){document.getElementById('demo-title').textContent='无法连接看板服务：'+e;}
+}
+async function pauseScene(){var j=await (await fetch('/api/demo/pause',{method:'POST'})).json();
+  if(j.error)document.getElementById('demo-title').textContent=j.error;}
+async function resumeScene(){var j=await (await fetch('/api/demo/resume',{method:'POST'})).json();
+  if(j.error)document.getElementById('demo-title').textContent=j.error;}
+async function stopScene(){await fetch('/api/demo/stop',{method:'POST'});
+  document.getElementById('demo-title').textContent='已请求停止当前场景（当前步骤执行完后生效）。';}
+async function masterOff(){
+  if(!confirm('一键关闭：停止场景 + 终止在途演示/流量任务 + 停止流量进程 + 清理演示任务记录？'))return;
+  document.getElementById('demo-title').textContent='一键关闭中…';
+  var j1=await (await fetch('/api/demo/stop?all=true',{method:'POST'})).json();
+  var j2=await (await fetch('/api/demo/clear',{method:'POST'})).json();
+  await fetch('/api/traffic/stop',{method:'POST'});
+  document.querySelectorAll('.scenebtn').forEach(function(c){c.classList.remove('run')});
+  document.getElementById('demo-title').textContent='已关闭：'+
+    (j1.cleanup?('判停在途任务 '+j1.cleanup.tasks_stopped+' 个、流量进程 '+(j1.cleanup.traffic_killed?'已停':'无')):'场景已停')+
+    (j2.ok?('，清理记录 '+j2.deleted+' 条'):'')+
+    '。引擎侧正在推理的余波任务由系统标记停止，余波完成后自然收尾（单任务真实推理耗时较长属正常现象）。';
+}
+async function benchRun(){
+  var note=document.getElementById('bench-note'), out=document.getElementById('bench-out');
+  var old=note.textContent;
+  note.textContent='实测中（约 30–120 秒，真实推理）…';
+  out.style.display='block'; out.textContent='任务已提交，等待真实结果…';
+  try{
+    var j=await (await fetch('/api/bench/best?tasks=6',{method:'POST'})).json();
+    note.textContent=old;
+    if(!j.ok){out.textContent='失败：'+(j.error||'');return;}
+    var lines=['===== 一键性能实测 · 日志统计 =====',
+      '提交 '+j.submitted+' 条 · 完成 '+j.finished+' 条 · 用时 '+j.elapsed_s+'s · 吞吐 '+j.throughput_per_min+' 次/分','',
+      '— 按落点节点排名（真实时延）—'];
+    (j.ranking||[]).forEach(function(x,i){
+      lines.push((i+1)+'. '+x.node+'  平均 '+x.avg_s+'s  最快 '+x.min_s+'s  （'+x.tasks+' 条）');});
+    lines.push('','最优落点：'+(j.best_node||'-'));
+    // ---- 对照此项目目标 · 实时评测（达标/差距） ----
+    var rate=j.submitted?Math.round(j.finished/j.submitted*100):0;
+    var avgLat=(j.ranking&&j.ranking.length)?
+      Math.round(j.ranking.reduce(function(s,x){return s+x.avg_s*x.tasks},0)/
+        Math.max(j.ranking.reduce(function(s,x){return s+x.tasks},0),1)*10)/10:0;
+    lines.push('','— 对照此项目目标 · 实时评测 —');
+    lines.push('任务成功率 '+rate+'%（此项目口径：三级池兜底 ≥90%）→ '+
+      (rate>=90?('达标（超出 '+(rate-90)+' pt）'):('未达标，差 '+(90-rate)+' pt（'+(j.submitted-j.finished)+' 条未在窗口内完成）')));
+    lines.push('平均真实时延 '+avgLat+'s（此项目口径：按 SLA 分档，无单一门槛）→ 参考'+
+      (avgLat>60?'；单机 GB10 三分片共享一块卡，重负载下排队等待推高时延，集群口径需多节点 POC':''));
+    lines.push('吞吐 '+j.throughput_per_min+' 次/分（参考值，与并发度和生成长度相关）');
+    lines.push('GPU 利用率请看顶部面板：此项目目标 85%+ 为集群口径，单机三片共享一块卡时不可直接对标');
+    lines.push('','注：全部为真实推理任务，无预置数据；逐条 JEV 评测见下方「JEV 日志报告」。');
+    out.textContent=lines.join('\n');
+  }catch(e){note.textContent=old;out.textContent='连接失败：'+e;}
+}
+async function trafficToggle(){
+  var btn=document.getElementById('btn-traffic');
+  try{
+    if(!TRAFFIC_ON){
+      var j=await (await fetch('/api/traffic/start?concurrency=3&duration=180&max_tokens=96',{method:'POST'})).json();
+      if(!j.ok){document.getElementById('traffic-note').textContent=j.error||'';return;}
+    }else{
+      await fetch('/api/traffic/stop',{method:'POST'});
+    }
+  }catch(e){}
+  trafficStatus();
+}
+async function trafficStatus(){
+  try{
+    var j=await (await fetch('/api/traffic/status',{cache:'no-store'})).json();
+    TRAFFIC_ON=!!j.running;
+    document.getElementById('btn-traffic').textContent=TRAFFIC_ON?'停止流量发生器':'启动流量发生器';
+    document.getElementById('traffic-note').textContent=TRAFFIC_ON?
+      ('运行中：并发 '+j.concurrency+' 路 · 已跑 '+j.elapsed_s+'s（真实任务注入调度闭环）'):'';
+  }catch(e){}
+}
+
+// ---------------- 反馈 / JEV 报告 ----------------
+function clock(){document.getElementById('clock').textContent=new Date().toLocaleString('zh-CN');}
+function fbCard(label,val,sub){
+  return '<div class="tier"><b>'+esc(label)+'</b>'+
+    '<div style="font-size:20px;font-weight:800;color:#8fcB1f">'+esc(val)+'</div>'+
+    '<div class="n">'+esc(sub)+'</div></div>';
+}
+async function feedback(){
+  var j;
+  try{ j=await (await fetch('/api/feedback',{cache:'no-store'})).json(); }catch(e){return;}
+  var h=j.harness||{}, t=h.tasks||{};
+  var hb=document.getElementById('fb-harness'); hb.innerHTML='';
+  hb.innerHTML=
+    fbCard('排队中', t.queued||0, '等待调度内核择点')+
+    fbCard('在途任务', t.running||0, '已绑定节点执行中')+
+    fbCard('已完成', t.done||0, '含抢占续算完成')+
+    fbCard('事件 / 5min', h.events_last_5min||0, '调度闭环事件速率');
+  var sp=(h.spool||{});
+  hb.innerHTML+=fbCard('prompt 内存 spool', (sp.size||0)+'/'+ (sp.max||0),
+    '隐私副本只在内存，随终态释放');
+  var v=j.jev||{};
+  var jb=document.getElementById('fb-jev'); jb.innerHTML='';
+  jb.innerHTML=
+    fbCard('评审调用', v.calls||0, '多数决等价判定总次数')+
+    fbCard('真实模型评审', v.live||0, '命中真实评审引擎')+
+    fbCard('本地离线评审', v.mock||0, 'local-offline 引擎（离线可复算）')+
+    fbCard('回退', v.fallback||0, '外部不可用时自动降级')+
+    fbCard('护栏拦截', v.blocks||0, '入口护栏 block 次数');
+}
+async function jevReport(){
+  var j;
+  try{ j=await (await fetch('/api/jev/report?limit=12',{cache:'no-store'})).json(); }catch(e){return;}
+  if(!j.ok) return;
+  var s=j.summary||{};
+  var sb=document.getElementById('jev-sum'); sb.innerHTML='';
+  sb.innerHTML=
+    fbCard('评测任务', s.evaluated||0, '近期终态任务逐条评测')+
+    fbCard('执行成功', (s.passed||0)+' · '+(s.pass_rate||0)+'%', 'done 占比')+
+    fbCard('JEV 调用', s.calls||0, 'live '+ (s.live||0)+' / mock '+(s.mock||0)+' / 回退 '+(s.fallback||0))+
+    fbCard('累计收益', '¥'+(s.total_amount_cny||0), 'tokens '+(s.total_tokens||0)+'（真实计量）');
+  var tb=document.getElementById('jev-items'); tb.innerHTML='';
+  (j.items||[]).forEach(function(it){
+    var tr=document.createElement('tr');
+    var stCls='s-'+(it.state||'');
+    var jevCls=it.consistency_ok===true?'b-ok':(it.consistency_ok===false?'b-no':'b-na');
+    var jevTxt=it.consistency_ok===true?'一致':(it.consistency_ok===false?'分歧':'未校验');
+    tr.innerHTML='<td title="'+esc(it.brief||'')+'">'+esc((it.task||'').slice(0,18))+'…</td>'+
+      '<td><span class="st '+stCls+'">'+esc(it.state)+'</span></td>'+
+      '<td>'+esc(it.node)+' / '+esc(it.engine)+'</td>'+
+      '<td>'+esc(it.latency_s)+'s</td>'+
+      '<td>'+esc(it.tokens)+'</td>'+
+      '<td><span class="badge '+jevCls+'">'+jevTxt+'</span></td>'+
+      '<td>'+esc(it.amount_cny)+'</td>'+
+      '<td>'+(it.estimated?'<span class="src src-e">估算</span>':'<span class="src src-m">实测</span>')+'</td>';
+    tb.appendChild(tr);
+  });
+  if(!(j.items||[]).length) tb.innerHTML='<tr><td colspan="8" class="legend">暂无终态任务。先启动场景 / 流量 / 性能实测，这里会逐条评测。</td></tr>';
+}
+
+// ---------------- Jev 实时评测活数据（基于持久化留痕，每 4s 自动刷新） ----------------
+function setJL(idx,val){
+  var els=document.querySelectorAll('#jlive-cards .tier .jv');
+  var b=els[idx]; if(!b) return;
+  if(b.textContent!==String(val)){
+    b.textContent=val;
+    b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump');
+  }
+}
+async function jlive(){
+  var stamp=document.getElementById('jlive-stamp');
+  try{
+    var j=await (await fetch('/api/jev/report?limit=12',{cache:'no-store'})).json();
+    if(!j.ok) throw new Error(j.error||'JEV 接口异常');
+    var a=j.analysis||{}, dist=a.dist||{ok:0,div:0,na:0};
+    var cards=document.getElementById('jlive-cards');
+    if(!cards.children.length){
+      cards.innerHTML=
+        '<div class="tier"><b>累计评测</b><div class="jv" style="font-size:20px;font-weight:800;color:#8fcB1f">0</div><div class="n">持久化留痕总条数</div></div>'+
+        '<div class="tier"><b>成功率</b><div class="jv" style="font-size:20px;font-weight:800;color:#8fcB1f">0%</div><div class="n">done 占比（留存口径）</div></div>'+
+        '<div class="tier"><b>多数决分歧</b><div class="jv" style="font-size:20px;font-weight:800;color:#e88a7d">0</div><div class="n">需复核的任务条数</div></div>'+
+        '<div class="tier"><b>累计收益</b><div class="jv" style="font-size:20px;font-weight:800;color:#8fcB1f">¥0</div><div class="n">真实计量（留存口径）</div></div>'+
+        '<div class="tier"><b>近 10 条趋势</b><div class="jv" style="font-size:20px;font-weight:800;color:#5aa9e6">—</div><div class="n">成功率趋势（对前 10 条）</div></div>';
+    }
+    setJL(0,a.total||0);
+    setJL(1,(a.pass_rate||0)+'%');
+    setJL(2,dist.div||0);
+    setJL(3,'¥'+(a.total_amount_cny||0));
+    setJL(4,(a.recent10==null?'—':a.recent10+'%')+' · '+(a.trend||'—'));
+    var tot=Math.max((dist.ok||0)+(dist.div||0)+(dist.na||0),1);
+    var bars=document.querySelectorAll('#jlive-dist i');
+    bars[0].style.width=(dist.ok/tot*100)+'%';
+    bars[1].style.width=(dist.div/tot*100)+'%';
+    bars[2].style.width=(dist.na/tot*100)+'%';
+    document.getElementById('jlive-dist-txt').textContent=
+      '一致 '+(dist.ok||0)+' 条 · 分歧 '+(dist.div||0)+' 条 · 未校验 '+(dist.na||0)+
+      ' 条 · 累计 tokens '+(a.total_tokens||0);
+    var nb=document.getElementById('jlive-nodes'); nb.innerHTML='';
+    var nodes=a.nodes||[];
+    if(!nodes.length) nb.innerHTML='<tr><td colspan="5" class="legend">暂无留痕。先运行场景 / 流量 / 性能实测。</td></tr>';
+    nodes.forEach(function(x){
+      var tr=document.createElement('tr');
+      tr.innerHTML='<td><b>'+esc(x.node)+'</b></td><td>'+x.tasks+'</td>'+
+        '<td>'+x.avg_lat+'s</td><td>'+x.amount_cny+'</td>'+
+        '<td>'+(x.diverge>0?'<span class="badge b-no">'+x.diverge+'</span>':'0')+'</td>';
+      nb.appendChild(tr);
+    });
+    document.getElementById('jlive-conc').textContent='===== 留存日志分析 · 自动结论 =====\n'+(a.conclusion||'—');
+    var now=new Date();
+    stamp.textContent='最后刷新 '+String(now.getHours()).padStart(2,'0')+':'+
+      String(now.getMinutes()).padStart(2,'0')+':'+String(now.getSeconds()).padStart(2,'0');
+    stamp.style.color='';
+  }catch(e){
+    stamp.textContent='JEV 刷新失败：'+esc(e.message||e)+'（4s 后重试）';
+    stamp.style.color='#e88a7d';
+  }
+}
+
+
+async function logAnalyze(){
+  var out=document.getElementById('logana-out');
+  out.style.display='block'; out.textContent='分析中：读取 JEV 报告与事件留痕…';
+  try{
+    var jr=await (await fetch('/api/jev/report?limit=50',{cache:'no-store'})).json();
+    var st=await (await fetch('/api/state',{cache:'no-store'})).json();
+    if(!jr.ok){out.textContent='分析失败：'+(jr.error||'JEV 报告不可用');return;}
+    var s=jr.summary||{}, items=jr.items||[];
+    var L=['===== 执行日志分析（基于真实留痕） =====',''];
+    if(!items.length){out.textContent=L.join('\n')+'暂无可分析的终态任务。先运行场景 / 流量 / 性能实测，停止后再来点这里。';return;}
+    // 1) 总览
+    L.push('— 总览 —');
+    L.push('评测任务 '+s.evaluated+' 条 · 执行成功 '+s.passed+' 条（'+(s.pass_rate||0)+'%） · '+
+      '累计 tokens '+s.total_tokens+' · 累计收益 ¥'+s.total_amount_cny);
+    // 2) JEV 判定分布
+    var jok=0,jno=0,jna=0;
+    items.forEach(function(it){
+      if(it.consistency_ok===true)jok++;else if(it.consistency_ok===false)jno++;else jna++;});
+    L.push('','— JEV 判定分布 —');
+    L.push('多数决一致 '+jok+' 条 · 存在分歧 '+jno+' 条 · 未触发校验 '+jna+' 条'+
+      '（JEV 调用 '+ (s.calls||0)+' 次：live '+(s.live||0)+' / mock '+(s.mock||0)+' / 回退 '+(s.fallback||0)+' / 拦截 '+(s.blocks||0)+'）');
+    if(jno>0)L.push('⚠ 分歧任务需要复核：多数决未达成一致，可能存在节点输出异常。');
+    // 3) 按落点节点聚合
+    var byN={};
+    items.forEach(function(it){var n=it.node||'-';(byN[n]=byN[n]||[]).push(it);});
+    L.push('','— 按落点节点聚合 —');
+    Object.keys(byN).sort().forEach(function(n){
+      var arr=byN[n], lat=arr.reduce(function(s2,x){return s2+(x.latency_s||0)},0)/arr.length;
+      var amt=arr.reduce(function(s2,x){return s2+(x.amount_cny||0)},0);
+      L.push(n+'：'+arr.length+' 条 · 平均时延 '+lat.toFixed(1)+'s · 收益 ¥'+amt.toFixed(4));});
+    // 4) 异常清单
+    var bad=items.filter(function(it){return it.state!=='done'||it.consistency_ok===false;});
+    L.push('','— 异常清单（失败/拒绝/分歧） —');
+    if(!bad.length){L.push('无异常：全部任务执行成功且 JEV 判定无分歧。');}
+    bad.slice(0,8).forEach(function(it){L.push('· '+it.brief);});
+    if(bad.length>8)L.push('…另有 '+(bad.length-8)+' 条，见上方 JEV 日志报告表。');
+    // 5) 事件留痕速率
+    var ev=(st.events||[]).length;
+    L.push('','— 事件留痕 —','近期事件 '+ev+' 条已写入留痕表（含场景步骤与调度闭环事件）。');
+    L.push('','结论：本次执行 '+(s.pass_rate>=90?'整体健康':'成功率偏低，建议看异常清单逐条排查')+
+      '；判定分布与收益均来自真实计量，可复核。');
+    out.textContent=L.join('\n');
+  }catch(e){out.textContent='分析失败：'+e;}
+}
+loadScenes();trafficStatus();
+feedback();setInterval(feedback,4000);
+jevReport();setInterval(jevReport,6000);
+jlive();setInterval(jlive,4000);
+setInterval(trafficStatus,5000);
+tick();setInterval(tick,2000);clock();setInterval(clock,1000);
+</script>
+</body>
+</html>
