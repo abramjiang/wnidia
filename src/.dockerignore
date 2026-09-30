@@ -1,0 +1,15 @@
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+.git/
+.gitignore
+data/wnidia.db*
+data/runlogs/
+data/tmp/
+*.md
+!README.md
+.venv/
+venv/
+.work/
+_shots/
+*.zip
