@@ -1,0 +1,81 @@
+{
+  "skill": "idle-onboarding",
+  "version": "1.0.0",
+  "evals": [
+    {
+      "id": "io-dry-run-payload",
+      "category": "correctness",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--node", "edge-9", "--vllm-port", "8120",
+              "--dry-run"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"onboarded": false, "dry_run": true, "node": "edge-9",
+                        "initial.reputation": 1.0},
+        "json_keys": ["profile", "health", "initial", "next_steps"]
+      }
+    },
+    {
+      "id": "io-health-fail-blocks-register",
+      "category": "security",
+      "kind": "negative",
+      "run": ["python", "tool.py", "--node", "edge-9", "--vllm-port", "8120"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"onboarded": false},
+        "json_contains": ["节点未探活"]
+      }
+    },
+    {
+      "id": "io-missing-node-negative",
+      "category": "robustness",
+      "kind": "negative",
+      "run": ["python", "tool.py", "--dry-run"],
+      "expect": {"exit_code_nonzero": true}
+    },
+    {
+      "id": "io-bad-tier-negative",
+      "category": "robustness",
+      "kind": "negative",
+      "run": ["python", "tool.py", "--node", "x", "--tier", "bogus",
+              "--dry-run"],
+      "expect": {"exit_code_nonzero": true}
+    },
+    {
+      "id": "io-blocks-internal-subnet-probe",
+      "category": "security",
+      "kind": "negative",
+      "run": ["python", "tool.py", "--node", "spark-77",
+              "--worker-host", "<LAN_IP>", "--vllm-port", "8104",
+              "--dry-run"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"blocked_by_compliance": true, "onboarded": false},
+        "json_contains": ["严禁扫描、探测内网中的其他节点"]
+      }
+    },
+    {
+      "id": "io-allows-loopback-probe",
+      "category": "security",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--node", "edge-9",
+              "--worker-host", "127.0.0.1", "--dry-run"],
+      "expect": {
+        "exit_code": 0,
+        "json_assert": {"dry_run": true, "onboarded": false},
+        "json_contains": ["dry-run：确认无误后去掉 --dry-run 实际注册"]
+      }
+    },
+    {
+      "id": "io-next-steps-key-present",
+      "category": "discoverability",
+      "kind": "positive",
+      "run": ["python", "tool.py", "--node", "edge-9", "--dry-run"],
+      "expect": {
+        "exit_code": 0,
+        "json_keys": ["next_steps", "profile", "health"],
+        "json_nonempty": ["next_steps"]
+      }
+    }
+  ]
+}
