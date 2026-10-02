@@ -1,0 +1,32 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# ---- 运行时产物 ----
+# 注意：曾因用 Contents API 直接推送而绕过 gitignore，导致 db-wal / db-shm / log
+# 混入仓库，事后才删除。故显式列出，避免再次发生。
+*.log
+*.db-wal
+*.db-shm
+*.pid
+data/*.jsonl
+data/*.db
+
+# ---- 环境变量 / 密钥 ----
+.env
+*.secret
+credentials.*
+
+# ---- 脱敏规则文件 ----
+# 该文件包含环境特有的真实用户名 / 端口 / 密码，用于 sanitize_check.py --rules，
+# 绝不能提交到公开仓库。
+sanitize_rules.json
+
+# ---- 编辑器 / 系统 ----
+.DS_Store
+.idea/
+.vscode/
