@@ -8,7 +8,7 @@
 
 - 公网跳板：`<PUBLIC_IP_2>`，登录用户 `Developer`（非 root）；
 - SSH 端口：`6NN`，其中 `NN` 为节点号（51–100）；
-- 内网网段：`<LAN_SUBNET>/24`，节点地址 `192.168.110.NN`。
+- 内网网段：`<LAN_SUBNET>/24`，节点地址 `<LAN_SUBNET>.NN`。
 
 登录：
 
