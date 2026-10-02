@@ -35,6 +35,8 @@ WNIDIA 把分散在 **云、边、端** 的异构算力（GPU / NPU / CPU）**�
 
 > 详细设计与数据流见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
 
+![系统架构](assets/architecture.svg)
+
 ```mermaid
 flowchart TB
   U[用户 / 应用] -->|推理请求| GW[接入网关 API :9000]
@@ -145,6 +147,21 @@ wnidia/                      # 仓库根：参赛文档 + 源码 + 证据
 - **可复现**：打包是**确定性**的（文件按字节序排序、mtime/uid/gid/权限固定、gzip 头 mtime 归零），任何人重新打包都得到同一哈希
 - **工具**：`evidence/wnidia_notarize.py`（打包 → SHA256 → 提交时间戳）
 - **发行版本**：[v5.1-r9](https://github.com/abramjiang/wnidia/releases/tag/v5.1-r9)
+
+---
+
+## 🛡️ 安全自查与 bug 自查
+
+仓库内置两个可复用工具（详见 [docs/SELFCHECK.md](docs/SELFCHECK.md)）：
+
+| 工具 | 用途 |
+|---|---|
+| [`scripts/sanitize_check.py`](scripts/sanitize_check.py) | 推送前扫描公网 IP / 端口 / 用户名 / 密钥 / 邮箱泄漏，支持 `--fix` 自动替换为占位符 |
+| [`scripts/selfcheck.py`](scripts/selfcheck.py) | 三层 bug 自查（语法 / 配置 / 运行时）+ 核心功能保护断言 |
+
+两者已接入 CI（`.github/workflows/selfcheck.yml`），push / PR 时自动执行。
+
+> 更多图示见 `assets/`（系统架构 / CSU 模块 / 可信固化边界）。
 
 ---
 
