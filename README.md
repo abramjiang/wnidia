@@ -121,10 +121,14 @@ wnidia/                      # 仓库根：参赛文档 + 源码 + 证据
 │   ├── scripts/             # 一键部署等脚本
 │   ├── tests/               # 测试套件
 │   └── skills/              # 调度 / 切分 / 纳管等能力插件
+├── jev-live/                # JEV live 裁决开发成果（下一版，非提交版本）
 └── evidence/                # 证据固化（哈希 + 时间戳凭证，见下）
 ```
 
 > 源码位于 `src/`，与文档分离；其中的真实 IP 已替换为 `<PUBLIC_IP>` 等占位符。
+>
+> 另有 `jev-live/`：JEV live 裁决的**下一版开发成果**（路线 A / 路线 B），
+> **不属于参赛提交版本** —— 详见 [jev-live/README.md](jev-live/README.md)。
 
 ---
 
