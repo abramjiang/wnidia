@@ -29,7 +29,6 @@
 import argparse
 import json
 import os
-import py_compile
 import re
 import subprocess
 import sys
@@ -102,10 +101,14 @@ def l1():
             total += 1
             p = os.path.join(dirpath, fn)
             try:
-                py_compile.compile(p, doraise=True, cfile=os.devnull)
+                # 用内建 compile 做纯语法检查：不落 .pyc 文件。
+                # 注意：py_compile 写 cfile=/dev/null 会抛 FileExistsError，
+                # 曾导致全部 .py 被误判为 FAIL，故不能用。
+                with open(p, 'rb') as fh:
+                    compile(fh.read(), p, 'exec')
                 ok += 1
             except Exception as e:
-                rec('L1', 'py_compile ' + os.path.relpath(p, ROOT), False, repr(e)[:100])
+                rec('L1', '语法 ' + os.path.relpath(p, ROOT), False, repr(e)[:100])
     rec('L1', 'Python 语法 (%d/%d)' % (ok, total), ok == total)
 
     if subprocess.run(['which', 'node'], capture_output=True).returncode == 0:
@@ -134,11 +137,12 @@ def l2():
     cfg = os.path.join(ROOT, 'controller/config.py')
     text = open(cfg, encoding='utf-8').read() if os.path.exists(cfg) else ''
 
-    m = re.search(r"JEV_MODE\s*=\s*os\.getenv\('WNIDIA_JEV_MODE',\s*'(\w+)'\)", text)
+    # 同时兼容单引号与双引号，避免因写法差异导致误判
+    m = re.search(r"""JEV_MODE\s*=\s*os\.getenv\(\s*['"]WNIDIA_JEV_MODE['"]\s*,\s*['"](\w+)['"]\s*\)""", text)
     mode = m.group(1) if m else '?'
     rec('L2', 'JEV_MODE 合法', mode in ('off', 'mock', 'live', 'auto'), '当前默认: %s' % mode)
 
-    m = re.search(r"JEV_BACKEND\s*=\s*os\.getenv\('WNIDIA_JEV_BACKEND',\s*'(\w+)'\)", text)
+    m = re.search(r"""JEV_BACKEND\s*=\s*os\.getenv\(\s*['"]WNIDIA_JEV_BACKEND['"]\s*,\s*['"](\w+)['"]\s*\)""", text)
     be = m.group(1) if m else '?'
     rec('L2', 'JEV_BACKEND 合法', be in ('http', 'local', 'multi'), '当前默认: %s' % be)
 
@@ -172,6 +176,11 @@ def l3(api, dash, token, allow_remote):
         return
 
     code, body = http(api + '/healthz', timeout=8)
+    if code == 0:
+        # 连接不上 ≠ 功能回退。不可达时整体跳过 L3，避免把"没起服务"误判成核心能力回退。
+        rec('L3', '运行时检查', None,
+            '服务不可达(%s)，已跳过 L3 —— 请先启动服务再跑全量自查' % api)
+        return
     rec('L3', '健康检查 /healthz', code == 200, 'HTTP %s' % code)
 
     code, st = http(api + '/admin/state', token=token)
@@ -183,7 +192,8 @@ def l3(api, dash, token, allow_remote):
     n_scenes = 0
     if isinstance(sc, dict):
         inner = sc.get('scenes', sc)
-        n_scenes = len(inner) if isinstance(inner, dict) else 0
+        # 兼容 dict 与 list 两种返回形态，避免形态差异造成误判
+        n_scenes = len(inner) if isinstance(inner, (dict, list)) else 0
     rec('L3', '场景清单非空(防 P0 解包 bug)', code == 200 and n_scenes > 0,
         'scenes=%d' % n_scenes, core=True)
 
@@ -196,8 +206,12 @@ def l3(api, dash, token, allow_remote):
             c2, s2 = http(api + '/admin/demo/status', token=token)
             if isinstance(s2, dict):
                 st2 = s2.get('status') or s2.get('state') or ''
-                steps = s2.get('step', s2.get('current_step', -1))
-                if isinstance(steps, int) and steps > 0:
+                raw_step = s2.get('step', s2.get('current_step', -1))
+                try:
+                    steps = int(raw_step)          # 防止字符串参与 > 比较而崩溃
+                except (TypeError, ValueError):
+                    steps = -1
+                if steps > 0:
                     break
                 if st2 in ('done', 'stopped'):
                     break
