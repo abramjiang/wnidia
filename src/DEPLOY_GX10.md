@@ -13,8 +13,8 @@
 | 序号 / 主机名 | 76 / **gx10-53e8** |
 | 节点内网地址 | <LAN_IP_2> |
 | 公网入口 IP | **<PUBLIC_IP>** |
-| SSH 登录 | `ssh -p 6026 asus_gx10@<PUBLIC_IP>` |
-| SSH 用户 / 端口 | asus_gx10 / **6026** |
+| SSH 登录 | `ssh -p <SSH_PORT> <NODE_USER>@<PUBLIC_IP>` |
+| SSH 用户 / 端口 | <NODE_USER> / **<SSH_PORT>** |
 
 **公网端口映射（内网 → 公网），只有 3 个（2026-09-29 公网实测确认）：**
 
@@ -37,7 +37,7 @@
 
 ```bash
 # 进入部署包所在目录后：
-scp -P 6026 wnidia_v5.1_gx10.zip asus_gx10@<PUBLIC_IP>:~/
+scp -P <SSH_PORT> wnidia_v5.1_gx10.zip <NODE_USER>@<PUBLIC_IP>:~/
 # 出现密码提示时，手动输入 SSH 密码（输入时不显示，属正常）
 ```
 
@@ -46,7 +46,7 @@ scp -P 6026 wnidia_v5.1_gx10.zip asus_gx10@<PUBLIC_IP>:~/
 ## 2. SSH 登录节点（手动输密码）
 
 ```bash
-ssh -p 6026 asus_gx10@<PUBLIC_IP>
+ssh -p <SSH_PORT> <NODE_USER>@<PUBLIC_IP>
 ```
 
 登录成功后，以下命令都在节点上执行。
@@ -113,10 +113,10 @@ curl -s http://<PUBLIC_IP>:9026/admin/state \
 
 ```bash
 # Ollama
-ssh -p 6026 -L 11434:localhost:11434 asus_gx10@<PUBLIC_IP>
+ssh -p <SSH_PORT> -L 11434:localhost:11434 <NODE_USER>@<PUBLIC_IP>
 # worker（可叠加多个 -L）
-ssh -p 6026 -L 8101:localhost:8101 -L 8102:localhost:8102 -L 8103:localhost:8103 \
-  asus_gx10@<PUBLIC_IP>
+ssh -p <SSH_PORT> -L 8101:localhost:8101 -L 8102:localhost:8102 -L 8103:localhost:8103 \
+  <NODE_USER>@<PUBLIC_IP>
 ```
 
 隧道建立后，本地访问 `http://127.0.0.1:11434` 即等于节点回环服务。
