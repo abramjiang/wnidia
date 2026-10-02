@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # WNIDIA 一键部署（实际分配的 gx10 节点：gx10-53e8 / 序号 76）
 #
-# 公网入口 : <PUBLIC_IP>   SSH 用户 asus_gx10   SSH 端口 6026
+# 公网入口 : <PUBLIC_IP>   SSH 用户 <NODE_USER>   SSH 端口 <SSH_PORT>
 # 端口映射（节点内网 -> 公网，2026-09-29 公网实测确认）：
 #   7000 -> 7026   Agent（Bearer Token 鉴权）
 #   8888 -> 8026   看板（HTTP Basic 鉴权）
@@ -12,7 +12,7 @@
 # 其它端口（Ollama 11434、worker 8101-8103）只绑回环，用 SSH 隧道访问。
 #
 # 前置（你手动完成，脚本不接触 SSH 密码）：
-#   ssh -p 6026 asus_gx10@<PUBLIC_IP>
+#   ssh -p <SSH_PORT> <NODE_USER>@<PUBLIC_IP>
 # 登录后，在 ~/wnidia 目录执行：
 #   bash scripts/deploy_gx10.sh                 # mock 模式（无 GPU 依赖）
 #   MODE=gpu bash scripts/deploy_gx10.sh        # 真实 GPU（Ollama，回环）
@@ -25,8 +25,8 @@ cd "${ROOT}"
 
 # ---- gx10 固定参数 ----
 PUBLIC_IP=<PUBLIC_IP>
-SSH_USER=asus_gx10
-SSH_PORT=6026
+SSH_USER=<NODE_USER>
+SSH_PORT=<SSH_PORT>
 AGENT_PORT=7000;  AGENT_PUB=7026
 DASH_PORT=8888;   DASH_PUB=8026
 API_PORT=9000;    API_PUB=9026
