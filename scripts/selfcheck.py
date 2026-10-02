@@ -39,6 +39,21 @@ from urllib.parse import urlparse
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+
+def detect_src_root():
+    """定位源码根目录。
+
+    源码可能在仓库根（本地开发工作树），也可能在 src/ 下（本 GitHub 仓库即如此）。
+    若只按仓库根找 controller/config.py 会找不到，导致 L2 全部误判 FAIL。
+    """
+    for cand in (ROOT, os.path.join(ROOT, 'src')):
+        if os.path.exists(os.path.join(cand, 'controller/config.py')):
+            return cand
+    return ROOT
+
+
+SRC_ROOT = detect_src_root()
+
 DEFAULT_API = os.environ.get('WNIDIA_API', 'http://127.0.0.1:9000')
 DEFAULT_DASH = os.environ.get('WNIDIA_DASH', 'http://127.0.0.1:8888')
 DEFAULT_TOKEN = os.environ.get('WNIDIA_TOKEN', 'previewtoken')
@@ -126,7 +141,7 @@ def l1():
     else:
         rec('L1', 'JS 语法', None, '未安装 node，跳过')
 
-    missing = [f for f in CORE_FILES if not os.path.exists(os.path.join(ROOT, f))]
+    missing = [f for f in CORE_FILES if not os.path.exists(os.path.join(SRC_ROOT, f))]
     rec('L1', '核心文件齐备', not missing,
         '缺失: %s' % missing if missing else '%d 个文件齐全' % len(CORE_FILES))
 
@@ -134,7 +149,7 @@ def l1():
 # ---------------- L2 ----------------
 def l2():
     print('\n[L2] 逻辑与配置')
-    cfg = os.path.join(ROOT, 'controller/config.py')
+    cfg = os.path.join(SRC_ROOT, 'controller/config.py')
     text = open(cfg, encoding='utf-8').read() if os.path.exists(cfg) else ''
 
     # 同时兼容单引号与双引号，避免因写法差异导致误判
@@ -268,6 +283,7 @@ def main():
     print(' WNIDIA 核心功能保护 + 三层 bug 自查')
     print('=' * 64)
     print(' 工程根目录: %s' % ROOT)
+    print(' 源码根目录: %s' % SRC_ROOT)
 
     l1()
     l2()
