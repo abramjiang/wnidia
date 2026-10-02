@@ -31,3 +31,25 @@ jobs:
           python-version: '3.11'
       - name: 语法 / 配置 / 脱敏 自查
         run: python3 scripts/selfcheck.py --skip-runtime
+
+  pytest:
+    name: 项目测试套件
+    runs-on: ubuntu-latest
+    # 说明：src/tests 中大量用例依赖本地服务栈（127.0.0.1:9000 / 8888 / 7000），
+    # CI 无 GPU 与 Ollama，暂设为非阻断（仅出报告）。
+    # 待服务栈容器化、测试可在 CI 内稳定跑通后，请把 continue-on-error 改为 false。
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+          pip install -r src/requirements.txt
+      - name: 运行测试
+        run: |
+          cd src
+          python -m pytest tests/ -q || echo "::warning::测试需本地服务栈，当前为非阻断模式"
