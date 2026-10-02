@@ -15,7 +15,7 @@ import os
 
 # 部署形态：spark = 手册标准节点（8888/9000 公网）；gx10 = 实际分配的 gx10 节点。
 # gx10 公网映射经 2026-09-29 从公网实测确认（本机 <PUBLIC_IP>）：
-#   7026→7000（Agent）  8026→8888（看板）  9026→9000（API）  6026→22（SSH）
+#   7026→7000（Agent）  8026→8888（看板）  9026→9000（API）  <SSH_PORT>→22（SSH）
 #   公网 8888 无映射（curl 超时）；公网 8026 应答 HTTPBasic 401 = 看板；
 #   公网 9026 /healthz 返回 {"ok":true} = 控制面 API。默认 spark，零行为变化。
 DEPLOY_TARGET = os.getenv('WNIDIA_DEPLOY_TARGET', 'spark').strip().lower()
@@ -28,7 +28,7 @@ if DEPLOY_TARGET == 'gx10':
         ipaddress.ip_network('<LAN_SUBNET_2>/24'),
     )
     # 内网端口 -> 公网端口 的固定映射（实测）
-    _GX10_PUBLIC_OF = {7000: 7026, 8888: 8026, 9000: 9026, 22: 6026}
+    _GX10_PUBLIC_OF = {7000: 7026, 8888: 8026, 9000: 9026, 22: <SSH_PORT>}
 else:
     # 手册 1.2 / 4.1：仅 8888 与 9000 做了公网映射
     PUBLIC_PORTS = (8888, 9000)
