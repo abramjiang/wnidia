@@ -10,12 +10,18 @@
 
 ## 目录内容
 
-| 文件 | 说明 |
-|---|---|
-| `device_profile.py` | 设备画像抽象（升级方案 ①）—— 数据结构 + 注册表 + 内置自检 |
-| `README.md` | 本文件 |
+| 文件 | 说明 | 自检 |
+|---|---|---|
+| `device_profile.py` | 设备画像抽象（①）—— 数据结构 + 注册表 | 14/14 |
+| `profile_routing.py` | 任务特征 + 瓶颈路由（②）—— 叠加式，不改现有调度 | 10/10 |
+| `profile_metering.py` | 按画像成本计量（③）—— 统一跨架构口径 | 12/12 |
+| `README.md` | 本文件 | — |
 
-配套设计文档见 `docs/HETEROGENEOUS_ARCHITECTURE.md`（架构总纲）。
+运行自检：`python3 controller/<模块名>.py`
+
+配套文档：
+- `docs/HETEROGENEOUS_ARCHITECTURE.md` —— 架构总纲
+- `docs/HETEROGENEOUS_UPGRADES.md` —— **开发与功能文档（含可植入需求与应用场景）**
 
 ---
 
