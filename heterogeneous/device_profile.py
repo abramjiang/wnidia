@@ -142,6 +142,22 @@ class DeviceRegistry:
         return [p.to_dict() for p in self._items.values()]
 
 
+# ---- 模块级默认注册表 ----
+# M2 接入后，scheduler / metering 需要按 node_id 查询画像，
+# 这里提供单例注册表与便捷函数，避免各处重复创建。
+DEFAULT_REGISTRY = DeviceRegistry()
+
+
+def register_profile(p: DeviceProfile) -> List[str]:
+    """注册到默认注册表（供 scheduler / metering 直接消费）。"""
+    return DEFAULT_REGISTRY.register(p)
+
+
+def profile_of(node_id: str) -> Optional[DeviceProfile]:
+    """按 node_id 取画像；未注册返回 None（调用方应按降级处理）。"""
+    return DEFAULT_REGISTRY.get(node_id)
+
+
 def _self_test() -> int:
     """内置自检：验证校验、能力查询与按瓶颈选设备。"""
     reg = DeviceRegistry()
