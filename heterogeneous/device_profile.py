@@ -154,7 +154,12 @@ def register_profile(p: DeviceProfile) -> List[str]:
 
 
 def profile_of(node_id: str) -> Optional[DeviceProfile]:
-    """按 node_id 取画像；未注册返回 None（调用方应按降级处理）。"""
+    """按 node_id 取画像；未注册返回 None（调用方应按降级处理）。
+
+    ⚠️ 易错点：本函数只查**模块级 DEFAULT_REGISTRY**。
+    若你用自建的 `DeviceRegistry()` 注册（如测试或试点脚本），
+    请改用该实例的 `.get(node_id)`，否则会取到 None。
+    """
     return DEFAULT_REGISTRY.get(node_id)
 
 
