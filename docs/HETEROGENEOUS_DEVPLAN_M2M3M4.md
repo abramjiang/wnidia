@@ -1,10 +1,36 @@
 # WNIDIA 异构编排 · 完整开发文档（含 M2 / M3 / M4 开发内容）
 
-> **范围**：仅 NVIDIA 全系列异构（不含国产卡、不含 Apple，后者另行规划）
-> **状态**：完整开发规格文档。当前**不写实现代码、不上传 GitHub**；
-> 待具备实测条件后，按本文档一次性实现并统一测试。
+> **范围**：仅 NVIDIA 全系列异构（不含国产卡；Apple 方向已搁置）
+> **状态**：完整开发规格文档。配套可运行实现见 `heterogeneous/`（模块 + 试点脚本）。
 >
-> 配套：`docs/HETEROGENEOUS_ARCHITECTURE.md`（总纲）、`docs/HETEROGENEOUS_UPGRADES.md`（①②③ 功能文档）
+> 配套文档：
+> - `docs/HETEROGENEOUS_ARCHITECTURE.md`（总纲）
+> - `docs/HETEROGENEOUS_UPGRADES.md`（①②③ 功能文档）
+> - `docs/HETEROGENEOUS_USAGE.md`（应用说明）
+> - `docs/HETEROGENEOUS_CHECKLIST.md`（接入与测试清单）
+> - `docs/HETEROGENEOUS_PILOT_5090_GB10.md`（**首个试点案例**）
+> - `docs/STRATEGY_POSITIONING.md`（商业定位）
+
+---
+
+## 硬件画像参考（各系列参数）
+
+> ⚠️ 以下为**参考值，须按官方 datasheet 复核**；不同资料来源口径可能不同。
+
+| 系列 | 代表型号 | 容量 | 带宽 | 精度支持 | 互联 |
+|---|---|---|---|---|---|
+| 数据中心 | H100 / H200 / B200 | 80–180GB | 数 TB/s | FP8 / FP4 | **NVLink** |
+| 数据中心（上代） | A100 | 40 / 80GB | ≈2039 GB/s | FP16 / INT8 | NVLink |
+| 专业工作站 | RTX 6000 Ada | 48GB (ECC) | ≈960 GB/s | FP8 / INT8 | 可选 NVLink |
+| 消费级 | **RTX 5090** | 32GB GDDR7 | ≈1792 GB/s | FP4 / FP8 | 无 |
+| 消费级 | RTX 4090 | 24GB | ≈1008 GB/s | FP8 / INT8 | 无 |
+| 边缘 | Jetson Orin | 32–64GB 统一内存 | 低 | INT8 / FP16 | 无 |
+| 一体机 | **GB10** | **128GB 统一内存** | ≈273 GB/s | FP4 / FP8 | 无 |
+
+**关键洞察**：
+- **容量与带宽往往不可兼得**——GB10 容量最大但带宽最低；5090 带宽最高但仅 32GB
+- **消费级无 NVLink** → 跨卡 TP 受 PCIe 限制，宜用独立实例
+- **精度支持随架构变化**：Blackwell 有 FP4，Ada 无
 
 ---
 
