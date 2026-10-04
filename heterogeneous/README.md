@@ -15,6 +15,8 @@
 | `device_profile.py` | 设备画像抽象（①）—— 数据结构 + 注册表 | 14/14 |
 | `profile_routing.py` | 任务特征 + 瓶颈路由（②）—— 叠加式，不改现有调度 | 10/10 |
 | `profile_metering.py` | 按画像成本计量（③）—— 统一跨架构口径 | 12/12 |
+| `profile_ab.py` | A/B 路由收益验证（M3）—— 决策质量 + 估算成本 | 8/8 |
+| `phase_split.py` | Prefill / Decode 分离规划（M4）—— 含传输开销估算 | 9/9 |
 | `README.md` | 本文件 | — |
 
 运行自检：`python3 controller/<模块名>.py`
