@@ -17,13 +17,20 @@
 | `profile_metering.py` | 按画像成本计量（③）—— 统一跨架构口径 | 12/12 |
 | `profile_ab.py` | A/B 路由收益验证（M3）—— 决策质量 + 估算成本 | 8/8 |
 | `phase_split.py` | Prefill / Decode 分离规划（M4）—— 含传输开销估算 | 9/9 |
+| `pilot_5090_gb10.py` | **首个试点：5090 + GB10 完整可运行案例** | 9/9 |
 | `README.md` | 本文件 | — |
 
 运行自检：`python3 controller/<模块名>.py`
+运行试点：`python3 controller/pilot_5090_gb10.py`
 
 配套文档：
 - `docs/HETEROGENEOUS_ARCHITECTURE.md` —— 架构总纲
-- `docs/HETEROGENEOUS_UPGRADES.md` —— **开发与功能文档（含可植入需求与应用场景）**
+- `docs/HETEROGENEOUS_UPGRADES.md` —— 开发与功能文档（含可植入需求与应用场景）
+- `docs/HETEROGENEOUS_DEVPLAN_M2M3M4.md` —— 完整开发规格（含硬件画像参考）
+- `docs/HETEROGENEOUS_USAGE.md` —— 应用说明
+- `docs/HETEROGENEOUS_CHECKLIST.md` —— 接入与测试清单
+- `docs/HETEROGENEOUS_PILOT_5090_GB10.md` —— **首个试点案例说明**
+- `docs/STRATEGY_POSITIONING.md` —— 商业定位与价值分析
 
 ---
 
