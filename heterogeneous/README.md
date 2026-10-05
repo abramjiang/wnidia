@@ -18,10 +18,18 @@
 | `profile_ab.py` | A/B 路由收益验证（M3）—— 决策质量 + 估算成本 | 8/8 |
 | `phase_split.py` | Prefill / Decode 分离规划（M4）—— 含传输开销估算 | 9/9 |
 | `pilot_5090_gb10.py` | **首个试点：5090 + GB10 完整可运行案例** | 9/9 |
+| `device_discovery.py` | **F1** 设备自动发现与画像注册（含模拟） | 16/16 |
+| `telemetry.py` | **F2** 统一遥测适配层（NVIDIA/AMD/Intel 归一化） | 8/8 |
+| `compliance_policy.py` | **F3** 合规策略可配置化（替代硬编码） | 10/10 |
+| `tenant_metering.py` | **F4** 租户 / 项目维度计量聚合 | 9/9 |
+| `k8s_adapter.py` | **F5** K8s 接入（模拟）+ Prometheus 导出 | 8/8 |
 | `README.md` | 本文件 | — |
 
-运行自检：`python3 controller/<模块名>.py`
+**共 11 个模块。** 运行自检：`python3 controller/<模块名>.py`
 运行试点：`python3 controller/pilot_5090_gb10.py`
+
+> F1/F2/F5 的**硬件相关部分为模拟实现**（无硬件环境下可跑通），
+> 真实接入时替换对应 provider 即可，上层业务逻辑无需改动。
 
 配套文档：
 - `docs/HETEROGENEOUS_ARCHITECTURE.md` —— 架构总纲
