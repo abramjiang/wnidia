@@ -2,7 +2,7 @@
 """F4 · 租户 / 项目维度计量
 
 现有 `metering.py` 是 **per-task** 的（一次调用一条记录），
-无法回答私有云客户最关心的问题："**这个部门/项目这个月花了多少？哪台机器贡献的？**"
+无法回答多租户场景最关心的问题："**这个租户/项目花了多少？哪台机器贡献的？**"
 
 本模块在其之上做聚合：
     UsageRecord(tenant, project, node_id, tokens, node_hours, estimated)
