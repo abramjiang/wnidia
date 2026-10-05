@@ -38,7 +38,7 @@
 - `docs/HETEROGENEOUS_USAGE.md` —— 应用说明
 - `docs/HETEROGENEOUS_CHECKLIST.md` —— 接入与测试清单
 - `docs/HETEROGENEOUS_PILOT_5090_GB10.md` —— **首个试点案例说明**
-- `docs/STRATEGY_POSITIONING.md` —— 商业定位与价值分析
+- `docs/HETEROGENEOUS_P0_IMPLEMENTATION.md` —— **P0（F1–F5）实现开发文档**
 
 ---
 
