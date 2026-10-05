@@ -31,10 +31,17 @@ except ImportError:
 # 简化参数（需实测校准）
 HIDDEN_BYTES_PER_TOKEN = 2 * 1024 * 2      # 近似：2 向量 × 1024 维 × fp16(2B)
 INTERCONNECT_GB_S = {                       # 按互联类型的有效带宽（GB/s）
+    # ⚠️ 必须覆盖 DeviceProfile.INTERCONNECTS 的全部取值，否则新类型会
+    #    静默回落到 'none'(8 GB/s) 而被当成最慢链路——曾因扩展 interconnect 引入此不一致。
     'nvlink': 300.0,
+    'ualink': 200.0,    # 开放互联联盟（对标 NVLink），同量级（需实测校准）
+    'cxl': 64.0,        # 内存语义互联，带宽低于 GPU 直连
+    'ucie': 32.0,       # 芯粒级互联，用于封装内
     'pcie': 16.0,
     'none': 8.0,        # 走网络，最慢
 }
+# 一致性校验：确保与 DeviceProfile.INTERCONNECTS 对齐（自检会检查）
+MISSING_INTERCONNECTS = None  # 见 _self_test 中的动态校验
 MIN_GAIN_MS = 50.0      # 分离至少要节省这么多毫秒才值得
 
 
@@ -161,6 +168,14 @@ def _self_test() -> int:
     # 容量不足
     p4 = plan(TaskFeature(model_size_gb=9999), reg)
     check(p4.split is False and '容量' in p4.reason, '容量不足时安全拒绝（不崩溃）')
+
+    # 一致性：互联带宽表必须覆盖 DeviceProfile 的全部 interconnect 取值
+    try:
+        from device_profile import INTERCONNECTS as _ICS
+    except Exception:
+        _ICS = ('nvlink', 'ualink', 'cxl', 'ucie', 'pcie', 'none')
+    missing = [i for i in _ICS if i not in INTERCONNECT_GB_S]
+    check(not missing, '互联带宽表覆盖全部 interconnect 取值（缺: %s）' % missing)
 
     # 隐私
     p5 = plan(TaskFeature(model_size_gb=8, privacy=True), reg)
