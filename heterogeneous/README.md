@@ -23,13 +23,22 @@
 | `compliance_policy.py` | **F3** 合规策略可配置化（替代硬编码） | 10/10 |
 | `tenant_metering.py` | **F4** 租户 / 项目维度计量聚合 | 9/9 |
 | `k8s_adapter.py` | **F5** K8s 接入（模拟）+ Prometheus 导出 | 8/8 |
+| `proxy_gateway.py` | **P1** 透明代理网关 —— 调用方**零改动**接入 | 18/18 |
+| `live_verify.py` | **P2** 真机验证 runner —— 产出可公开实测报告 | 18/18 |
+| `routing_sdk.py` | **P3** 零依赖路由内核 —— 可被第三方直接采用 | 17/17 |
+| `metering_report.py` | **P4** 计量账单 + 哈希链 + 反事实对比 | 18/18 |
 | `README.md` | 本文件 | — |
 
-**共 11 个模块。** 运行自检：`python3 controller/<模块名>.py`
+**共 15 个模块。** 运行自检：`python3 controller/<模块名>.py`
 运行试点：`python3 controller/pilot_5090_gb10.py`
 
 > F1/F2/F5 的**硬件相关部分为模拟实现**（无硬件环境下可跑通），
 > 真实接入时替换对应 provider 即可，上层业务逻辑无需改动。
+>
+> P1/P2 支持注入 `transport`；注入假传输层跑通的是**逻辑**，
+> 且结果会被标记 `simulated=True`——**真机验证必须使用默认真实 HTTP 传输层**。
+>
+> P3 `routing_sdk.py` **只依赖标准库**，可单独复制到任何项目使用（已实测验证）。
 
 配套文档：
 - `docs/HETEROGENEOUS_ARCHITECTURE.md` —— 架构总纲
@@ -39,6 +48,40 @@
 - `docs/HETEROGENEOUS_CHECKLIST.md` —— 接入与测试清单
 - `docs/HETEROGENEOUS_PILOT_5090_GB10.md` —— **首个试点案例说明**
 - `docs/HETEROGENEOUS_P0_IMPLEMENTATION.md` —— **P0（F1–F5）实现开发文档**
+- `docs/HETEROGENEOUS_SCORING_PATH.md` —— **提分路径（P1–P4）实现开发文档**
+
+---
+
+## 提分路径四模块（P1–P4）
+
+针对"功能不少但缺少**能跑的证据**与**低门槛接入**"这一短板，补齐四项：
+
+| 模块 | 解决什么 | 关键设计 |
+|---|---|---|
+| **P1 `proxy_gateway.py`** | 调用方要改造才能用 → 门槛高 | **伪装成调用方原本的服务**（OpenAI `/v1/chat/completions` 与 Ollama `/api/chat` 双线格式），改 base_url 即可，agent 零改动 |
+| **P2 `live_verify.py`** | 没有真机实测数据 → 不可信 | 一条命令跑场景矩阵 + A/B，**产出可公开报告**；模拟数据强制标记 `simulated` |
+| **P3 `routing_sdk.py`** | 能力被锁在自己架构里 | 抽成**零依赖单文件**，第三方可直接复制或接受贡献 |
+| **P4 `metering_report.py`** | 有计量代码 ≠ 有计量产品 | 生成**账单**（按租户/项目/节点）+ 三种导出 + 哈希链 + 反事实对比 |
+
+### P1 的"透明"具体指什么
+
+```python
+# 调用方原本这样写：
+client = OpenAI(base_url='http://localhost:11434/v1')
+
+# 接入 WNIDIA 后：把 11434 交给 WNIDIA 监听，
+# 上面这行代码**一个字都不用改**，但请求已被画像路由 + 计量。
+```
+
+支持的透明端口：`ollama=11434`、`openai=8000`。
+
+### P2 的诚实设计（最重要）
+
+注入假传输层时，报告顶部会写：
+
+> ⚠️ **本报告为模拟数据（注入的假传输层），不可对外发布。**
+
+这杜绝了把仿真结果当实测对外发布的可能。
 
 ---
 
