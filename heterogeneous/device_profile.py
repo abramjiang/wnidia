@@ -25,8 +25,11 @@ from typing import Dict, List, Optional
 # ---- 受控词表 ----
 FAMILIES = ('datacenter', 'workstation', 'consumer', 'edge', 'soc', 'apple-silicon')
 MEMORY_MODELS = ('unified', 'discrete')
-INTERCONNECTS = ('nvlink', 'pcie', 'none')
+# 互联类型：随产业演进扩展（UALink 开放互联联盟、CXL 内存语义、UCIe 芯粒互联）
+INTERCONNECTS = ('nvlink', 'ualink', 'cxl', 'ucie', 'pcie', 'none')
 PRECISIONS = ('fp4', 'fp8', 'int8', 'fp16', 'fp32')
+# 厂商：多厂商异构必需（范围限定美股大厂，不涉足国产卡）
+VENDORS = ('nvidia', 'amd', 'intel', 'other')
 
 
 @dataclass
@@ -34,14 +37,15 @@ class DeviceProfile:
     """设备画像。所有字段均可在注册时提供；缺省值保守，避免误判。"""
     node_id: str
     gpu_name: str = 'unknown'
+    vendor: str = 'nvidia'                   # 见 VENDORS（nvidia / amd / intel / other）
     family: str = 'consumer'                 # 见 FAMILIES
-    arch: str = ''                           # blackwell / ada / hopper / ampere / apple
+    arch: str = ''                           # blackwell / ada / hopper / ampere / cdna / gaudi
     capacity_gb: float = 0.0                 # 可用容量预算
     memory_model: str = 'discrete'           # unified | discrete
     bandwidth_gb_s: float = 0.0              # 显存带宽（GB/s）
     compute_tflops: Dict[str, float] = field(default_factory=dict)
     precision_support: List[str] = field(default_factory=list)
-    interconnect: str = 'none'               # nvlink | pcie | none
+    interconnect: str = 'none'               # 见 INTERCONNECTS
     power_w: int = 0
     engine_pref: List[str] = field(default_factory=list)
     tags: List[str] = field(default_factory=list)
@@ -58,6 +62,8 @@ class DeviceProfile:
             errs.append('memory_model 非法: %s' % self.memory_model)
         if self.interconnect not in INTERCONNECTS:
             errs.append('interconnect 非法: %s' % self.interconnect)
+        if self.vendor not in VENDORS:
+            errs.append('vendor 非法: %s（应为 %s）' % (self.vendor, ', '.join(VENDORS)))
         if self.capacity_gb < 0 or self.bandwidth_gb_s < 0 or self.power_w < 0:
             errs.append('数值字段不可为负')
         bad = [p for p in self.precision_support if p not in PRECISIONS]
