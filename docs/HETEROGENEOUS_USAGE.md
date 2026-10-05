@@ -62,11 +62,30 @@ reg.register(DeviceProfile(
 
 # 一体机（统一内存）
 reg.register(DeviceProfile(
-    node_id='gb10-0', gpu_name='GB10', family='soc', arch='blackwell',
+    node_id='gb10-0', gpu_name='GB10', vendor='nvidia', family='soc', arch='blackwell',
     capacity_gb=128, memory_model='unified', bandwidth_gb_s=273,
     compute_tflops={'fp8': 300},
     precision_support=['fp4', 'fp8'],
     interconnect='none', power_w=240, engine_pref=['ollama']))
+
+# AMD（多厂商）
+reg.register(DeviceProfile(
+    node_id='mi300-0', gpu_name='AMD Instinct MI300X', vendor='amd',
+    family='datacenter', arch='cdna3', capacity_gb=192, memory_model='discrete',
+    bandwidth_gb_s=5300, compute_tflops={'fp8': 1300},
+    precision_support=['fp8', 'int8', 'fp16'],
+    interconnect='pcie', power_w=750, engine_pref=['vllm']))
+
+# Intel（多厂商）
+reg.register(DeviceProfile(
+    node_id='gaudi-0', gpu_name='Intel Gaudi 3', vendor='intel',
+    family='datacenter', arch='gaudi', capacity_gb=128, memory_model='discrete',
+    bandwidth_gb_s=3600, compute_tflops={'fp8': 900},
+    precision_support=['fp8', 'int8', 'fp16'],
+    interconnect='pcie', power_w=600, engine_pref=['vllm']))
+
+> **多厂商字段**：`vendor`（nvidia / amd / intel / other）为本轮新增，
+> 与 `interconnect`（nvlink / ualink / cxl / ucie / pcie / none）共同支撑跨厂商画像。
 
 # 边缘
 reg.register(DeviceProfile(
