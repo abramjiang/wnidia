@@ -3,12 +3,12 @@
 
 现状问题：调度器里的合规约束是**硬编码**的
 （`rank_of(t.secret) >= SECRET_RANK['L2']` → 主权域检查；
- `>= L3` → trusted 与 cc_level 检查），无法按客户/行业调整。
+ `>= L3` → trusted 与 cc_level 检查），无法按部署环境调整。
 
 本模块把合规约束外置为**可配置的策略**：
     secret_rank -> {require_trusted, min_cc_level, allowed_regions, require_tags, deny_tags}
 
-这样私有云客户可按自身合规要求配置，无需改代码。
+这样不同部署环境可按自身合规要求配置，无需改代码。
 
 默认策略 `DEFAULT_POLICY` **等价于现有硬编码行为**，保证迁移不回退。
 """
