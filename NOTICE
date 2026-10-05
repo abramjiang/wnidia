@@ -1,0 +1,52 @@
+WNIDIA — 分布式异构算力网络平台
+Copyright 2026 abramjiang
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+--------------------------------------------------------------------------
+一、项目说明
+--------------------------------------------------------------------------
+本仓库为 WNIDIA 的开源技术资料库，包含：
+
+  - src/          参赛提交版源码快照（已脱敏、冻结，不再修改）
+  - heterogeneous/ 异构编排扩展模块（下一版开发成果）
+  - docs/         技术文档
+  - scripts/      部署与自查工具
+  - evidence/     证据固化文件（哈希链 + 时间戳）
+  - jev-live/     JEV live 裁决的下一版开发成果（不属于参赛提交版本）
+
+--------------------------------------------------------------------------
+二、第三方依赖与致谢
+--------------------------------------------------------------------------
+本项目在运行期可能调用以下第三方软件，它们各自遵循其原有许可，
+本项目不对这些依赖主张任何权利：
+
+  - Ollama            （MIT License）
+  - vLLM              （Apache License 2.0）
+  - llama.cpp         （MIT License）
+  - FastAPI / Uvicorn （MIT License）
+  - Prometheus 客户端  （Apache License 2.0）
+
+--------------------------------------------------------------------------
+三、商标
+--------------------------------------------------------------------------
+"WNIDIA" 名称与标识归项目作者所有。本许可不授予使用该项目名称、
+商标或服务标记的权利，仅在描述项目来源时可按惯例合理引用。
+
+--------------------------------------------------------------------------
+四、声明
+--------------------------------------------------------------------------
+本仓库中的硬件规格参数为**参考值**，可能随厂商更新而变化，
+使用前请按各厂商官方 datasheet 复核。
+
+本仓库不包含任何商业合作、客户或签约信息；相关内容不属于开源范围。
